@@ -1,0 +1,33 @@
+[versions]
+minecraft = "1.21"
+architectury-api = "13.0.2"
+fabric-loader = "0.16.5"
+fabric-api = "0.102.0+1.21"
+neoforge = "21.0.167"
+parchment-mappings = "2024.07.28"
+
+architectury-plugin = "3.4.159"
+architectury-loom = "1.7.413"
+shadow = "8.3.2"
+
+[libraries]
+minecraft = { module = "net.minecraft:minecraft", version.ref = "minecraft" }
+fabric-loader = { module = "net.fabricmc:fabric-loader", version.ref = "fabric-loader" }
+fabric-api = { module = "net.fabricmc.fabric-api:fabric-api", version.ref = "fabric-api" }
+neoforge = { module = "net.neoforged:neoforge", version.ref = "neoforge" }
+architectury-api = { module = "dev.architectury:architectury", version.ref = "architectury-api" }
+architectury-api-neoforge = { module = "dev.architectury:architectury-neoforge", version.ref = "architectury-api" }
+architectury-api-fabric = { module = "dev.architectury:architectury-fabric", version.ref = "architectury-api" }
+parchment-mappings = { module = "org.parchmentmc.data:parchment-1.21", version.ref = "parchment-mappings" }
+
+# plugins as libraries, used in convetion plugins
+architectury-plugin = { module = "architectury-plugin:architectury-plugin.gradle.plugin", version.ref = "architectury-plugin" }
+architectury-loom = { module = "dev.architectury.loom:dev.architectury.loom.gradle.plugin", version.ref = "architectury-loom" }
+shadow = { module = "com.gradleup.shadow:shadow-gradle-plugin", version.ref = "shadow" }
+
+[bundles]
+
+[plugins]
+architectury-plugin = { id = "architectury-plugin", version.ref = "architectury-plugin" }
+architectury-loom = { id = "dev.architectury.loom", version.ref = "architectury-loom" }
+shadow = { id = "com.gradleup.shadow", version.ref = "shadow" }
