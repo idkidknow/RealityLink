@@ -17,6 +17,7 @@ import java.util.Optional;
 
 public final class RealityCommunicationMod {
     public static final String MOD_ID = "realcomm";
+    public static final Path CONFIG_PATH = Platform.getConfigFolder();
 
     private static final Logger logger = LogUtils.getLogger();
     private static MinecraftServer server;
@@ -28,7 +29,15 @@ public final class RealityCommunicationMod {
         LifecycleEvent.SERVER_STOPPING.register(RealityCommunicationMod::onServerStopping);
     }
 
-    private static void startApiServer(Path serverOptionFile) {
+    public static void startApiServer(Path serverOptionFile) throws IOException {
+        if (grpcServer != null) {
+            throw new IllegalStateException("trying to start an API server, but server already started");
+        }
+        serverOptionFile = CONFIG_PATH.resolve(serverOptionFile);
+        if (!serverOptionFile.startsWith(CONFIG_PATH.resolve("realcomm"))) {
+            throw new IllegalArgumentException("illegal path");
+        }
+
         record ServerOption(int port, String localeCode, String resourcePacksDir) {}
         ServerOption option;
         try {
@@ -36,8 +45,8 @@ public final class RealityCommunicationMod {
             var gson = new Gson();
             option = gson.fromJson(json, ServerOption.class);
         } catch (IOException e) {
-            logger.error("Failed to read {}: ", serverOptionFile, e);
-            return;
+            logger.error("Failed to read {}", serverOptionFile);
+            throw e;
         }
 
         logger.info("Reality Communication API server starting");
@@ -50,20 +59,30 @@ public final class RealityCommunicationMod {
         try {
             grpcServer = Server.start(server, launchOption);
         } catch (IOException e) {
-            logger.error("Failed to start grpc server: ", e);
+            logger.error("Failed to start grpc server");
+            throw e;
         }
+    }
+
+    public static void stopApiServer() {
+        if (grpcServer == null) return;
+        grpcServer.stop();
+        grpcServer = null;
     }
 
     private static void onServerStarting(MinecraftServer server) {
         RealityCommunicationMod.server = server;
-        var autostartOptionPath = Platform.getConfigFolder().resolve("realcomm/autostart.json");
+        var autostartOptionPath = CONFIG_PATH.resolve("realcomm/autostart.json");
         if (!Files.exists(autostartOptionPath)) return;
         logger.info("autostart.json found");
-        startApiServer(autostartOptionPath);
+        try {
+            startApiServer(autostartOptionPath);
+        } catch (Throwable e) {
+            logger.error("Failed to start api server: ", e);
+        }
     }
 
     private static void onServerStopping(MinecraftServer server) {
-        if (grpcServer == null) return;
-        grpcServer.stop();
+        stopApiServer();
     }
 }
