@@ -10,6 +10,8 @@ architectury {
 dependencies {
     "neoForge"(libs.neoforge)
     modImplementation(libs.architectury.api.neoforge)
+
+    forgeRuntimeLibrary(project(path = ":common", configuration = "commonNonModRuntime"))
 }
 
 tasks.named<ProcessResources>("processResources") {

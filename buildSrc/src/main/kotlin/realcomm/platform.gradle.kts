@@ -25,9 +25,6 @@ configurations {
     compileClasspath {
         extendsFrom(get("common"))
     }
-    runtimeClasspath {
-        extendsFrom(get("common"))
-    }
     // Architectury transformer
     afterEvaluate {
         named("development$platform") {
@@ -43,6 +40,7 @@ configurations {
 
 dependencies {
     "common"(project(path = ":common", configuration = "namedElements")) { isTransitive = false }
+    runtimeOnly(project(path = ":common", configuration = "commonNonModRuntime"))
     "shadowBundle"(project(":common", configuration = "transformProduction$platform"))
 }
 

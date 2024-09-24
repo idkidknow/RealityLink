@@ -28,5 +28,8 @@
   },
   "suggests": {
     "another-mod": "*"
-  }
+  },
+  "mixins": [
+    "realcomm.mixins.json"
+  ]
 }
