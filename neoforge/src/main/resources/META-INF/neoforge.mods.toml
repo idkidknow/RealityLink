@@ -7,11 +7,12 @@ license = "MIT"
 modId = "realcomm"
 version = "${version}"
 displayName = "Reality Communication"
-authors = "Me!"
+authors = "idkana"
 description = '''
 Communication between player in the game and the reality.
 '''
 #logoFile = ""
+displayTest = "IGNORE_SERVER_VERSION"
 
 [[dependencies.realcomm]]
 modId = "neoforge"
@@ -34,5 +35,5 @@ versionRange = "[13.0.2,)"
 ordering = "AFTER"
 side = "BOTH"
 
-#[[mixins]]
-#config = "realcomm.mixins.json"
+[[mixins]]
+config = "realcomm.mixins.json"

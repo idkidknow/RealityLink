@@ -1,6 +1,4 @@
-package com.idkidknow.mcrealcomm;
-
-import java.nio.file.Path;
+package com.idkidknow.mcrealcomm.api.grpc.server;
 
 public record ServerOption(int port, String localeCode, String resourcePacksDir) {
 }

@@ -14,8 +14,7 @@ message Empty {}
 
 message ChatComponent {
   string json = 1;
-  string text = 2; // getString(), usually en-us in a dedicated server
-  string translated_text = 3; // Server side translated text
+  string translated_text = 2; // Server side translated text
 }
 
 message ChatReceivedEvent {

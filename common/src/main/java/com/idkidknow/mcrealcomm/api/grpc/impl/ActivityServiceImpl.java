@@ -1,4 +1,4 @@
-package com.idkidknow.mcrealcomm.grpc.impl;
+package com.idkidknow.mcrealcomm.api.grpc.impl;
 
 import com.idkidknow.mcrealcomm.grpc.Activity;
 import com.idkidknow.mcrealcomm.grpc.ActivityServiceGrpc;
