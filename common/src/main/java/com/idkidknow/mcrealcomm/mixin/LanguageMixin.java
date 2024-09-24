@@ -16,7 +16,4 @@ public abstract class LanguageMixin {
             cir.setReturnValue(language);
         }
     }
-
-
 }
-

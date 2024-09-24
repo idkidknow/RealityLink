@@ -1,11 +1,8 @@
 package com.idkidknow.mcrealcomm.server.l10n;
 
-import com.mojang.logging.LogUtils;
 import net.minecraft.locale.Language;
 import net.minecraft.network.chat.FormattedText;
-import org.slf4j.Logger;
-
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 
 public class ServerTranslate {
     private static final ThreadLocal<Language> injectingLanguage = new ThreadLocal<>();

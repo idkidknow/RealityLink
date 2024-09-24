@@ -9,7 +9,6 @@ import net.minecraft.util.FormattedCharSequence;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 
-import javax.annotation.Nonnull;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -20,15 +19,15 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 public abstract class ServerLanguage extends Language {
-    public abstract Optional<String> get(@Nonnull String key);
+    public abstract Optional<String> get(@NotNull String key);
 
     @Override
-    public @Nonnull String getOrDefault(@Nonnull String key, @Nonnull String defaultValue) {
+    public @NotNull String getOrDefault(@NotNull String key, @NotNull String defaultValue) {
         return get(key).orElse(defaultValue);
     }
 
     @Override
-    public boolean has(@Nonnull String id) {
+    public boolean has(@NotNull String id) {
         return get(id).isPresent();
     }
 
@@ -39,7 +38,7 @@ public abstract class ServerLanguage extends Language {
     }
 
     @Override
-    public @Nonnull FormattedCharSequence getVisualOrder(@Nonnull FormattedText text) {
+    public @NotNull FormattedCharSequence getVisualOrder(@NotNull FormattedText text) {
         // only used in GUI
         return FormattedCharSequence.EMPTY;
     }
@@ -50,7 +49,7 @@ public abstract class ServerLanguage extends Language {
      * Read language files in Java resources
      * Under normal circumstances, there are Minecraft's en_us.json and all language json in every mods' jar file
      * */
-    public static @Nonnull ServerLanguage getResourceLanguage(Iterable<String> namespaces, String localeCode) {
+    public static @NotNull ServerLanguage getResourceLanguage(Iterable<String> namespaces, String localeCode) {
         var builder = ImmutableMap.<String, String>builder();
         for (var namespace : namespaces) {
             var path = String.format("/assets/%s/lang/%s.json", namespace, localeCode);
@@ -74,14 +73,14 @@ public abstract class ServerLanguage extends Language {
         };
     }
 
-    public static @Nonnull ServerLanguage getResourceLanguage(MinecraftServer server, String localeCode) {
+    public static @NotNull ServerLanguage getResourceLanguage(MinecraftServer server, String localeCode) {
         return getResourceLanguage(server.getResourceManager().getNamespaces(), localeCode);
     }
 
     /**
      * Read language files in resources packs of given paths
      * */
-    public static @Nonnull ServerLanguage getResourcePackLanguage(Iterable<Path> paths, String localeCode) {
+    public static @NotNull ServerLanguage getResourcePackLanguage(Iterable<Path> paths, String localeCode) {
         var builder = ImmutableMap.<String, String>builder();
         for (var path : paths) {
             logger.info("loading resource pack {}", path);
@@ -100,7 +99,7 @@ public abstract class ServerLanguage extends Language {
         };
     }
 
-    public static @Nonnull ServerLanguage getResourcePackDirLanguage(Path dir, String localeCode) {
+    public static @NotNull ServerLanguage getResourcePackDirLanguage(Path dir, String localeCode) {
         logger.info("getResourcePackDirLanguage: loading {}", dir);
         if (!Files.isDirectory(dir)) return ServerLanguage.empty();
         try (var paths = Files.list(dir)) {
@@ -115,7 +114,7 @@ public abstract class ServerLanguage extends Language {
     /**
      * Elements that appear earlier have higher priority and are applied first
      * */
-    public static @Nonnull ServerLanguage compose(ServerLanguage... languages) {
+    public static @NotNull ServerLanguage compose(ServerLanguage... languages) {
         return new ServerLanguage() {
             @Override
             public Optional<String> get(@NotNull String key) {
@@ -130,7 +129,7 @@ public abstract class ServerLanguage extends Language {
         };
     }
 
-    public static @Nonnull ServerLanguage empty() {
+    public static @NotNull ServerLanguage empty() {
         return new ServerLanguage() {
             @Override
             public Optional<String> get(@NotNull String key) {

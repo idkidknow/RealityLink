@@ -3,7 +3,6 @@ package com.idkidknow.mcrealcomm;
 import com.google.gson.Gson;
 import com.idkidknow.mcrealcomm.api.grpc.server.Server;
 import com.idkidknow.mcrealcomm.api.grpc.server.ServerLaunchOption;
-import com.idkidknow.mcrealcomm.api.grpc.server.ServerOption;
 import com.idkidknow.mcrealcomm.server.l10n.ServerLanguage;
 import com.mojang.logging.LogUtils;
 import dev.architectury.event.events.common.LifecycleEvent;
@@ -13,6 +12,7 @@ import org.slf4j.Logger;
 
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Optional;
 
 public final class RealityCommunicationMod {
@@ -28,7 +28,18 @@ public final class RealityCommunicationMod {
         LifecycleEvent.SERVER_STOPPING.register(RealityCommunicationMod::onServerStopping);
     }
 
-    private static void startApiServer(ServerOption option) {
+    private static void startApiServer(Path serverOptionFile) {
+        record ServerOption(int port, String localeCode, String resourcePacksDir) {}
+        ServerOption option;
+        try {
+            String json = Files.readString(serverOptionFile);
+            var gson = new Gson();
+            option = gson.fromJson(json, ServerOption.class);
+        } catch (IOException e) {
+            logger.error("Failed to read {}: ", serverOptionFile, e);
+            return;
+        }
+
         logger.info("Reality Communication API server starting");
         var resourcePacksDirStr = option.resourcePacksDir();
         var resourcePacksDir = Platform.getGameFolder().resolve(resourcePacksDirStr);
@@ -48,14 +59,7 @@ public final class RealityCommunicationMod {
         var autostartOptionPath = Platform.getConfigFolder().resolve("realcomm/autostart.json");
         if (!Files.exists(autostartOptionPath)) return;
         logger.info("autostart.json found");
-        try {
-            var json = Files.readString(autostartOptionPath);
-            var gson = new Gson();
-            ServerOption option = gson.fromJson(json, ServerOption.class);
-            startApiServer(option);
-        } catch (IOException e) {
-            logger.warn("Failed to read the option file: ", e);
-        }
+        startApiServer(autostartOptionPath);
     }
 
     private static void onServerStopping(MinecraftServer server) {

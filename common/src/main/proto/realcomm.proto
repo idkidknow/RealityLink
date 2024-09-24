@@ -6,8 +6,9 @@ option java_outer_classname = "RealityCommunicationProto";
 
 package mcrealcomm;
 
-service ActivityService {
-  rpc SubscribeActivity (stream Empty) returns (stream Activity);
+service ChatService {
+  rpc SubscribeChat (stream Empty) returns (stream ChatComponent);
+  rpc BroadcastMessage (Message) returns (Empty);
 }
 
 message Empty {}
@@ -17,41 +18,9 @@ message ChatComponent {
   string translated_text = 2; // Server side translated text
 }
 
-message ChatReceivedEvent {
-  ChatComponent player = 1;
-  ChatComponent message = 2;
-}
-
-message PlayerJoinEvent {
-  ChatComponent player = 1;
-}
-
-message PlayerQuitEvent {
-  ChatComponent player = 1;
-}
-
-message PlayerAdvancementEvent {
-  ChatComponent player = 1;
-  string advancement_id = 2;
-  ChatComponent title = 3;
-  ChatComponent description = 4;
-}
-
-message PlayerDeathEvent {
-  ChatComponent player = 1;
-  string damage_id = 2;
-  optional ChatComponent causing_entity = 3;
-  optional ChatComponent direct_entity = 4;
-  optional ChatComponent kill_credit = 5;
-}
-
-message Activity {
-  ChatComponent chat_message = 1;
-  oneof event {
-    ChatReceivedEvent chat_received = 2;
-    PlayerJoinEvent player_join = 3;
-    PlayerQuitEvent player_quit = 4;
-    PlayerAdvancementEvent player_advancement = 5;
-    PlayerDeathEvent player_death = 6;
+message Message {
+  oneof message {
+    string literal = 1;
+    string component_json = 2;
   }
 }
