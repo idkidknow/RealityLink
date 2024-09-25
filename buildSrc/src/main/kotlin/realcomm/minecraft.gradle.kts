@@ -12,6 +12,13 @@ version = property("mod_version").toString()
 // https://github.com/gradle/gradle/issues/15383#issuecomment-1940357260
 val libs = versionCatalogs.named("libs")
 
+java {
+    withSourcesJar()
+
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
+}
+
 repositories {
     mavenCentral()
     maven { url = uri("https://maven.parchmentmc.org") }

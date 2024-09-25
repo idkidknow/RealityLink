@@ -12,14 +12,6 @@ architectury {
     common(platforms)
 }
 
-@Suppress("UnstableApiUsage")
-configurations {
-    register("commonNonModRuntime") {
-        extendsFrom(runtimeOnly.get())
-        extendsFrom(implementation.get())
-    }
-}
-
 dependencies {
     // We depend on Fabric Loader here to use the Fabric @Environment annotations,
     // which get remapped to the correct annotations on each platform.

@@ -1,9 +1,9 @@
 package com.idkidknow.mcrealcomm.api.grpc.impl;
 
-import com.idkidknow.mcrealcomm.grpc.ChatComponent;
-import com.idkidknow.mcrealcomm.grpc.ChatServiceGrpc;
-import com.idkidknow.mcrealcomm.grpc.Empty;
-import com.idkidknow.mcrealcomm.grpc.Message;
+import com.idkidknow.mcrealcomm.api.grpc.ChatComponent;
+import com.idkidknow.mcrealcomm.api.grpc.ChatServiceGrpc;
+import com.idkidknow.mcrealcomm.api.grpc.Empty;
+import com.idkidknow.mcrealcomm.api.grpc.Message;
 import com.mojang.logging.LogUtils;
 import io.grpc.stub.StreamObserver;
 import net.minecraft.network.chat.Component;

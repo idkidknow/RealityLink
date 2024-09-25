@@ -40,7 +40,6 @@ configurations {
 
 dependencies {
     "common"(project(path = ":common", configuration = "namedElements")) { isTransitive = false }
-    runtimeOnly(project(path = ":common", configuration = "commonNonModRuntime"))
     "shadowBundle"(project(":common", configuration = "transformProduction$platform"))
 }
 

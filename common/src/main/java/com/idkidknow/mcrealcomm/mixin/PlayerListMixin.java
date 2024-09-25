@@ -3,7 +3,6 @@ package com.idkidknow.mcrealcomm.mixin;
 import com.idkidknow.mcrealcomm.api.grpc.server.BroadcastMessageEvent;
 import net.minecraft.network.chat.ChatType;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.OutgoingChatMessage;
 import net.minecraft.network.chat.PlayerChatMessage;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.players.PlayerList;

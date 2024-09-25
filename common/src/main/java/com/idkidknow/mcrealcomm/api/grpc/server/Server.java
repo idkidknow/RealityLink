@@ -1,7 +1,7 @@
 package com.idkidknow.mcrealcomm.api.grpc.server;
 
+import com.idkidknow.mcrealcomm.api.grpc.ChatComponent;
 import com.idkidknow.mcrealcomm.api.grpc.impl.ChatServiceImpl;
-import com.idkidknow.mcrealcomm.grpc.*;
 import com.idkidknow.mcrealcomm.server.l10n.ServerTranslate;
 import com.mojang.logging.LogUtils;
 import io.grpc.ServerBuilder;
