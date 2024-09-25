@@ -4,6 +4,7 @@ import com.idkidknow.mcrealcomm.api.grpc.ChatComponent;
 import com.idkidknow.mcrealcomm.api.grpc.impl.ChatServiceImpl;
 import com.idkidknow.mcrealcomm.server.l10n.ServerTranslate;
 import com.mojang.logging.LogUtils;
+import io.grpc.Grpc;
 import io.grpc.ServerBuilder;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
@@ -28,8 +29,12 @@ public class Server {
         server.minecraftServer = minecraftServer;
         server.chatService = new ChatServiceImpl(minecraftServer);
         server.option = option;
-        server.grpcServer = ServerBuilder.forPort(option.port()).addService(server.chatService).build().start();
+        server.grpcServer = Grpc.newServerBuilderForPort(option.port(), option.creds())
+                .addService(server.chatService)
+                .build()
+                .start();
         BroadcastMessageEvent.register(server::onMessageBroadcast);
+        logger.info("Reality Communication grpc server started, listen on port {}", option.port());
         return server;
     }
 
@@ -37,6 +42,7 @@ public class Server {
         BroadcastMessageEvent.unregister(this::onMessageBroadcast);
         chatService.shutdown();
         grpcServer.shutdown();
+        logger.info("Reality Communication grpc server stopped");
     }
 
     private void onMessageBroadcast(Component message) {

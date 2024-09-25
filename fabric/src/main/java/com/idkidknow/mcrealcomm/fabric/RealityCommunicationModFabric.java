@@ -9,11 +9,13 @@ import com.mojang.brigadier.suggestion.SuggestionProvider;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import com.mojang.brigadier.tree.LiteralCommandNode;
+import com.mojang.logging.LogUtils;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
+import org.slf4j.Logger;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -21,6 +23,7 @@ import java.nio.file.Path;
 import java.util.concurrent.CompletableFuture;
 
 public class RealityCommunicationModFabric implements ModInitializer {
+    private static Logger logger = LogUtils.getLogger();
     @Override
     public void onInitialize() {
         RealityCommunicationMod.init();
@@ -36,11 +39,14 @@ public class RealityCommunicationModFabric implements ModInitializer {
                                     context.getSource().sendFailure(Component.literal("server already started"));
                                     return -1;
                                 } catch (IllegalArgumentException e) {
-                                    context.getSource().sendFailure(Component.literal("illegal path"));
+                                    context.getSource().sendFailure(Component.literal(e.getCause().toString()));
                                     return -2;
                                 } catch (IOException e) {
                                     context.getSource().sendFailure(Component.literal("failed"));
                                     return -3;
+                                } catch (Throwable e) {
+                                    logger.error("unexpected error: ", e);
+                                    throw e;
                                 }
                                 context.getSource().sendSuccess(() -> Component.literal("success"), false);
                                 return 1;

@@ -7,6 +7,9 @@ import com.idkidknow.mcrealcomm.server.l10n.ServerLanguage;
 import com.mojang.logging.LogUtils;
 import dev.architectury.event.events.common.LifecycleEvent;
 import dev.architectury.platform.Platform;
+import io.grpc.InsecureServerCredentials;
+import io.grpc.ServerCredentials;
+import io.grpc.TlsServerCredentials;
 import net.minecraft.server.MinecraftServer;
 import org.slf4j.Logger;
 
@@ -17,6 +20,7 @@ import java.util.Optional;
 
 public final class RealityCommunicationMod {
     public static final String MOD_ID = "realcomm";
+    public static final Path GAME_PATH = Platform.getGameFolder();
     public static final Path CONFIG_PATH = Platform.getConfigFolder();
 
     private static final Logger logger = LogUtils.getLogger();
@@ -38,8 +42,16 @@ public final class RealityCommunicationMod {
             throw new IllegalArgumentException("illegal path");
         }
 
-        record ServerOption(int port, String localeCode, String resourcePacksDir) {}
+        record ServerOption(
+                int port,
+                String localeCode,
+                String resourcePacksDir,
+                String certChain,
+                String privateKey,
+                String trustCerts
+        ) {}
         ServerOption option;
+
         try {
             String json = Files.readString(serverOptionFile);
             var gson = new Gson();
@@ -51,11 +63,33 @@ public final class RealityCommunicationMod {
 
         logger.info("Reality Communication API server starting");
         var resourcePacksDirStr = option.resourcePacksDir();
-        var resourcePacksDir = Platform.getGameFolder().resolve(resourcePacksDirStr);
+        var resourcePacksDir = GAME_PATH.resolve(resourcePacksDirStr);
         var languageResourcePack = ServerLanguage.getResourcePackDirLanguage(resourcePacksDir, option.localeCode());
         var languageFallback = ServerLanguage.getResourceLanguage(server, option.localeCode());
         var language = ServerLanguage.compose(languageResourcePack, languageFallback);
-        var launchOption = new ServerLaunchOption(option.port(), Optional.of(language));
+
+        ServerCredentials creds;
+        if (option.certChain() == null || option.privateKey() == null) {
+            if (option.certChain() != null || option.privateKey() != null) {
+                throw new IllegalArgumentException("certChain and privateKey both must be provided");
+            }
+            creds = InsecureServerCredentials.create();
+        } else {
+            logger.info("set up tls");
+            var realcommConfigPath = CONFIG_PATH.resolve("realcomm");
+            var certChain = realcommConfigPath.resolve(option.certChain());
+            var privateKey = realcommConfigPath.resolve(option.privateKey());
+            var tlsBuilder = TlsServerCredentials.newBuilder().keyManager(certChain.toFile(), privateKey.toFile());
+            if (option.trustCerts() != null) {
+                logger.info("set up mutual tls");
+                var trustCerts = realcommConfigPath.resolve(option.trustCerts());
+                tlsBuilder.trustManager(trustCerts.toFile());
+                tlsBuilder.clientAuth(TlsServerCredentials.ClientAuth.REQUIRE);
+            }
+            creds = tlsBuilder.build();
+        }
+
+        var launchOption = new ServerLaunchOption(option.port(), creds, Optional.of(language));
         try {
             grpcServer = Server.start(server, launchOption);
         } catch (IOException e) {
