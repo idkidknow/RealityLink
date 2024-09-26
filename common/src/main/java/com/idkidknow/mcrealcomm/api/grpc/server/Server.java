@@ -5,7 +5,6 @@ import com.idkidknow.mcrealcomm.api.grpc.impl.ChatServiceImpl;
 import com.idkidknow.mcrealcomm.server.l10n.ServerTranslate;
 import com.mojang.logging.LogUtils;
 import io.grpc.Grpc;
-import io.grpc.ServerBuilder;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import org.jetbrains.annotations.NotNull;

@@ -7,6 +7,7 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
+import com.mojang.logging.LogUtils;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
@@ -14,6 +15,7 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
+import org.slf4j.Logger;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -22,6 +24,8 @@ import java.util.concurrent.CompletableFuture;
 
 @Mod(RealityCommunicationMod.MOD_ID)
 public final class RealityCommunicationModNeoForge {
+    private static final Logger logger = LogUtils.getLogger();
+
     public RealityCommunicationModNeoForge() {
         RealityCommunicationMod.init();
         NeoForge.EVENT_BUS.addListener(RealityCommunicationModNeoForge::onRegisterCommands);
@@ -40,11 +44,14 @@ public final class RealityCommunicationModNeoForge {
                                 context.getSource().sendFailure(Component.literal("server already started"));
                                 return -1;
                             } catch (IllegalArgumentException e) {
-                                context.getSource().sendFailure(Component.literal("illegal path"));
+                                context.getSource().sendFailure(Component.literal(e.getCause().toString()));
                                 return -2;
                             } catch (IOException e) {
                                 context.getSource().sendFailure(Component.literal("failed"));
                                 return -3;
+                            } catch (Throwable e) {
+                                logger.error("unexpected error: ", e);
+                                throw e;
                             }
                             context.getSource().sendSuccess(() -> Component.literal("success"), false);
                             return 1;

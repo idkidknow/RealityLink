@@ -23,7 +23,7 @@ import java.nio.file.Path;
 import java.util.concurrent.CompletableFuture;
 
 public class RealityCommunicationModFabric implements ModInitializer {
-    private static Logger logger = LogUtils.getLogger();
+    private static final Logger logger = LogUtils.getLogger();
     @Override
     public void onInitialize() {
         RealityCommunicationMod.init();
