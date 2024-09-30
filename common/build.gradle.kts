@@ -1,9 +1,11 @@
-import com.google.protobuf.gradle.id
-import org.gradle.jvm.tasks.Jar
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+import org.gradle.kotlin.dsl.create
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
+    alias(libs.plugins.kotlin)
+    alias(libs.plugins.kotlin.serialization)
     id("realcomm.minecraft")
-    alias(libs.plugins.protobuf)
 }
 
 val platforms = property("enabled_platforms").toString().split(',')
@@ -11,6 +13,8 @@ val platforms = property("enabled_platforms").toString().split(',')
 architectury {
     common(platforms)
 }
+
+configurations.create("relocateNetty")
 
 dependencies {
     // We depend on Fabric Loader here to use the Fabric @Environment annotations,
@@ -20,29 +24,14 @@ dependencies {
     // Architectury API
     modImplementation(libs.architectury.api)
 
-    // grpc
-    runtimeOnly(libs.grpc.netty.shaded)
-    implementation(libs.grpc.protobuf)
-    implementation(libs.grpc.stub)
-    compileOnly(libs.tomcat.annotations.api) // necessary for Java 9+
-}
+    implementation(libs.kotlin.logging)
+    implementation(libs.ktoml.core)
+    implementation(libs.kotlinx.coroutines.core)
+    implementation(libs.kotlinx.serialization.json)
 
-protobuf {
-    protoc {
-        artifact = libs.protoc.asProvider().get().toString()
-    }
-
-    plugins {
-        id("grpc") {
-            artifact = libs.protoc.gen.grpc.java.get().toString()
-        }
-    }
-
-    generateProtoTasks {
-        ofSourceSet("main").forEach {
-            it.plugins {
-                id("grpc") {}
-            }
-        }
-    }
+    // ktor
+    implementation(libs.ktor.server.core)
+    implementation(libs.ktor.server.websockets)
+    implementation(libs.ktor.server.netty)
+    implementation(libs.ktor.serialization.kotlinx.json)
 }

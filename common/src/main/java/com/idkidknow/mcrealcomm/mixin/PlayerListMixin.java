@@ -1,6 +1,7 @@
 package com.idkidknow.mcrealcomm.mixin;
 
-import com.idkidknow.mcrealcomm.api.grpc.server.BroadcastMessageEvent;
+import com.idkidknow.mcrealcomm.event.BroadcastingMessageEvent;
+import com.idkidknow.mcrealcomm.event.EventsKt;
 import net.minecraft.network.chat.ChatType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.PlayerChatMessage;
@@ -18,11 +19,11 @@ import java.util.function.Predicate;
 public abstract class PlayerListMixin {
     @Inject(method = "broadcastSystemMessage(Lnet/minecraft/network/chat/Component;Z)V", at = @At("RETURN"))
     private void getSystemMessageToBroadcast(Component message, boolean bypassHiddenChat, CallbackInfo ci) {
-        BroadcastMessageEvent.invoke(message);
+        EventsKt.getBroadcastingMessageEventManager().invoke(new BroadcastingMessageEvent(message));
     }
     @Inject(method = "broadcastChatMessage(Lnet/minecraft/network/chat/PlayerChatMessage;Ljava/util/function/Predicate;Lnet/minecraft/server/level/ServerPlayer;Lnet/minecraft/network/chat/ChatType$Bound;)V", at = @At("RETURN"))
     private void getChatMessageToBroadcast(PlayerChatMessage message, Predicate<ServerPlayer> shouldFilterMessageTo, @Nullable ServerPlayer sender, ChatType.Bound boundChatType, CallbackInfo ci) {
         var component = boundChatType.decorate(message.decoratedContent());
-        BroadcastMessageEvent.invoke(component);
+        EventsKt.getBroadcastingMessageEventManager().invoke(new BroadcastingMessageEvent(component));
     }
 }

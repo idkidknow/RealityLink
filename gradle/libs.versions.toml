@@ -6,10 +6,10 @@ fabric-api = "0.102.0+1.21"
 neoforge = "21.0.167"
 parchment-mappings = "2024.07.28"
 
-grpc-java = "1.66.0"
-protoc = "3.25.3" # the same as the protoc version used in grpc-java
-tomcat-annotations-api = "6.0.53"
-protobuf-plugin = "0.9.4"
+kotlin = "2.0.20"
+kotlin-logging = "7.0.0"
+ktoml = "0.5.1"
+ktor = "3.0.0-rc-1"
 
 architectury-plugin = "3.4.159"
 architectury-loom = "1.7.413"
@@ -25,13 +25,18 @@ architectury-api-neoforge = { module = "dev.architectury:architectury-neoforge",
 architectury-api-fabric = { module = "dev.architectury:architectury-fabric", version.ref = "architectury-api" }
 parchment-mappings = { module = "org.parchmentmc.data:parchment-1.21", version.ref = "parchment-mappings" }
 
-# grpc
-grpc-netty-shaded = { module = "io.grpc:grpc-netty-shaded", version.ref = "grpc-java" }
-grpc-protobuf = { module = "io.grpc:grpc-protobuf", version.ref = "grpc-java" }
-grpc-stub = { module = "io.grpc:grpc-stub", version.ref = "grpc-java" }
-protoc = { module = "com.google.protobuf:protoc", version.ref = "protoc" }
-protoc-gen-grpc-java = { module = "io.grpc:protoc-gen-grpc-java", version.ref = "grpc-java" }
-tomcat-annotations-api = { module = "org.apache.tomcat:annotations-api", version.ref = "tomcat-annotations-api" }
+kotlin-logging = { module = "io.github.oshai:kotlin-logging-jvm", version.ref = "kotlin-logging" }
+ktoml-core = { module = "com.akuleshov7:ktoml-core", version.ref = "ktoml" }
+kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version = "1.9.0" }
+kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version = "1.7.3" }
+
+#ktor
+ktor-server-core = { module = "io.ktor:ktor-server-core-jvm", version.ref = "ktor" }
+ktor-server-websockets = { module = "io.ktor:ktor-server-websockets-jvm", version.ref = "ktor" }
+ktor-server-netty = { module = "io.ktor:ktor-server-netty-jvm", version.ref = "ktor" }
+ktor-server-jetty = { module = "io.ktor:ktor-server-jetty-jakarta-jvm", version.ref = "ktor" }
+ktor-server-tomcat = { module = "io.ktor:ktor-server-tomcat-jakarta-jvm", version.ref = "ktor" }
+ktor-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktor" }
 
 # plugins as libraries, used in convetion plugins
 architectury-plugin = { module = "architectury-plugin:architectury-plugin.gradle.plugin", version.ref = "architectury-plugin" }
@@ -45,4 +50,6 @@ architectury-plugin = { id = "architectury-plugin", version.ref = "architectury-
 architectury-loom = { id = "dev.architectury.loom", version.ref = "architectury-loom" }
 shadow = { id = "com.gradleup.shadow", version.ref = "shadow" }
 
-protobuf = { id = "com.google.protobuf", version.ref = "protobuf-plugin" }
+kotlin = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+ktor = { id = "io.ktor.plugin", version.ref = "ktor" }

@@ -16,7 +16,7 @@
   "environment": "*",
   "entrypoints": {
     "main": [
-      "com.idkidknow.mcrealcomm.fabric.RealityCommunicationModFabric"
+      "com.idkidknow.mcrealcomm.fabric.RealityCommunicationModEntryFabric"
     ]
   },
   "depends": {

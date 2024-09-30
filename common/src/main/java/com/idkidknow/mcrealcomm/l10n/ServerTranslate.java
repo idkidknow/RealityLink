@@ -1,7 +1,8 @@
-package com.idkidknow.mcrealcomm.server.l10n;
+package com.idkidknow.mcrealcomm.l10n;
 
 import net.minecraft.locale.Language;
 import net.minecraft.network.chat.FormattedText;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class ServerTranslate {
@@ -11,7 +12,7 @@ public class ServerTranslate {
         return injectingLanguage.get();
     }
 
-    public static String translate(FormattedText text, Language language) {
+    public static @NotNull String translate(@NotNull FormattedText text, @NotNull Language language) {
         injectingLanguage.set(language);
         var ret = text.getString();
         injectingLanguage.remove();

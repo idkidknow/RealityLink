@@ -1,4 +1,7 @@
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+
 plugins {
+    alias(libs.plugins.kotlin)
     id("realcomm.minecraft")
     id("realcomm.platform")
 }
@@ -12,12 +15,18 @@ dependencies {
     modImplementation(libs.fabric.api)
     modImplementation(libs.architectury.api.fabric)
 
-    runtimeOnly(libs.grpc.netty.shaded)
-    runtimeOnly(libs.grpc.protobuf)
-    runtimeOnly(libs.grpc.stub)
-    include(libs.grpc.netty.shaded)
-    include(libs.grpc.protobuf)
-    include(libs.grpc.stub)
+    runtimeOnly(libs.kotlin.logging)
+    runtimeOnly(libs.ktoml.core)
+    runtimeOnly(libs.kotlinx.coroutines.core)
+    runtimeOnly(libs.kotlinx.serialization.json)
+
+    // ktor
+    runtimeOnly(libs.ktor.server.core)
+    runtimeOnly(libs.ktor.server.websockets)
+    runtimeOnly(libs.ktor.server.netty) {
+        exclude(group = "io.netty")
+    }
+    runtimeOnly(libs.ktor.serialization.kotlinx.json)
 }
 
 tasks.named<ProcessResources>("processResources") {
