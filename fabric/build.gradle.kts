@@ -10,7 +10,6 @@ architectury {
 dependencies {
     modImplementation(libs.fabric.loader)
     modImplementation(libs.fabric.api)
-    modImplementation(libs.architectury.api.fabric)
 
     runtimeOnly(libs.kotlin.logging)
     runtimeOnly(libs.ktoml.core)

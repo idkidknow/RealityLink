@@ -9,15 +9,11 @@ architectury {
     common(platforms)
 }
 
-configurations.create("relocateNetty")
-
 dependencies {
     // We depend on Fabric Loader here to use the Fabric @Environment annotations,
     // which get remapped to the correct annotations on each platform.
     // Do NOT use other classes from Fabric Loader.
     modImplementation(libs.fabric.loader)
-    // Architectury API
-    modImplementation(libs.architectury.api)
 
     implementation(libs.kotlin.logging)
     implementation(libs.ktoml.core)

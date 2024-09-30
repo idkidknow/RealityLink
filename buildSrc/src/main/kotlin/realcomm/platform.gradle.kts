@@ -12,26 +12,21 @@ plugins {
 
 val platform: String by project
 
+loom {
+    mods {
+        maybeCreate("main").apply {
+            sourceSet(project.sourceSets.main.get())
+            sourceSet(project(":common").sourceSets.main.get())
+        }
+    }
+}
+
 architectury {
     platformSetupLoomIde()
 }
 
 @Suppress("UnstableApiUsage")
 configurations {
-    register("common") {
-        isCanBeResolved = true
-        isCanBeConsumed = false
-    }
-    compileClasspath {
-        extendsFrom(get("common"))
-    }
-    // Architectury transformer
-    afterEvaluate {
-        named("development$platform") {
-            extendsFrom(get("common"))
-        }
-    }
-
     register("shadowBundle") {
         isCanBeResolved = true
         isCanBeConsumed = false
@@ -39,7 +34,7 @@ configurations {
 }
 
 dependencies {
-    "common"(project(path = ":common", configuration = "namedElements")) { isTransitive = false }
+    implementation(project(path = ":common", configuration = "namedElements"))
     "shadowBundle"(project(":common", configuration = "transformProduction$platform"))
 }
 

@@ -27,6 +27,7 @@ repositories {
 }
 
 architectury {
+    compileOnly()
     minecraft = libs.findVersion("minecraft").get().toString()
 }
 

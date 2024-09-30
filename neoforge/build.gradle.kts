@@ -9,7 +9,6 @@ architectury {
 
 dependencies {
     "neoForge"(libs.neoforge)
-    modImplementation(libs.architectury.api.neoforge)
 }
 
 tasks.named<ProcessResources>("processResources") {

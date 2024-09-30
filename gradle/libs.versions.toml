@@ -20,9 +20,6 @@ minecraft = { module = "net.minecraft:minecraft", version.ref = "minecraft" }
 fabric-loader = { module = "net.fabricmc:fabric-loader", version.ref = "fabric-loader" }
 fabric-api = { module = "net.fabricmc.fabric-api:fabric-api", version.ref = "fabric-api" }
 neoforge = { module = "net.neoforged:neoforge", version.ref = "neoforge" }
-architectury-api = { module = "dev.architectury:architectury", version.ref = "architectury-api" }
-architectury-api-neoforge = { module = "dev.architectury:architectury-neoforge", version.ref = "architectury-api" }
-architectury-api-fabric = { module = "dev.architectury:architectury-fabric", version.ref = "architectury-api" }
 parchment-mappings = { module = "org.parchmentmc.data:parchment-1.21", version.ref = "parchment-mappings" }
 
 kotlin-logging = { module = "io.github.oshai:kotlin-logging-jvm", version.ref = "kotlin-logging" }
