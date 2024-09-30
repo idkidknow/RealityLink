@@ -1,7 +1,6 @@
 package realcomm
 
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
-import gradle.kotlin.dsl.accessors._354db3ae2d986c6f96ba20d9374098f5.versionCatalogs
 import net.fabricmc.loom.task.RemapJarTask
 
 plugins {

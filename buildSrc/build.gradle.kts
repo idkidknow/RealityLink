@@ -13,4 +13,5 @@ dependencies {
     implementation(libs.architectury.loom)
     implementation(libs.architectury.plugin)
     implementation(libs.shadow)
+    implementation(libs.kotlin.plugin)
 }

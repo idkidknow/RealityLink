@@ -1,11 +1,6 @@
-import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
-import org.gradle.kotlin.dsl.create
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-
 plugins {
-    alias(libs.plugins.kotlin)
+    id("realcomm.common")
     alias(libs.plugins.kotlin.serialization)
-    id("realcomm.minecraft")
 }
 
 val platforms = property("enabled_platforms").toString().split(',')

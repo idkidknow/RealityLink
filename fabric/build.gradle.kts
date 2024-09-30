@@ -1,8 +1,5 @@
-import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
-
 plugins {
-    alias(libs.plugins.kotlin)
-    id("realcomm.minecraft")
+    id("realcomm.common")
     id("realcomm.platform")
 }
 

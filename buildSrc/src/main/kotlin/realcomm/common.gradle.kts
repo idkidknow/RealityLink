@@ -2,6 +2,7 @@ package realcomm
 
 plugins {
     id("java")
+    kotlin("jvm")
     id("dev.architectury.loom")
     id("architectury-plugin")
 }

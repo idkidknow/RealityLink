@@ -1,5 +1,5 @@
 plugins {
-    id("realcomm.minecraft")
+    id("realcomm.common")
     id("realcomm.platform")
 }
 
