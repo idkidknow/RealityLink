@@ -23,7 +23,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.serialization.SerialName
@@ -32,7 +31,6 @@ import kotlinx.serialization.json.Json
 import net.minecraft.locale.Language
 import net.minecraft.network.chat.Component
 import net.minecraft.server.MinecraftServer
-import java.util.concurrent.Executors
 
 private val logger = KotlinLogging.logger {}
 
@@ -89,7 +87,7 @@ class ApiServer(
             }.start(wait = false)
         }
 
-        job = CoroutineScope(Executors.newFixedThreadPool(10).asCoroutineDispatcher()).launch {
+        job = CoroutineScope(Dispatchers.IO + Job()).launch {
             init()
         }
     }
