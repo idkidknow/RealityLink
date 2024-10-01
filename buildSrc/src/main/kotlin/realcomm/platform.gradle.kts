@@ -35,7 +35,7 @@ configurations {
 
 dependencies {
     implementation(project(path = ":common", configuration = "namedElements"))
-    "shadowBundle"(project(":common", configuration = "transformProduction$platform"))
+    "shadowBundle"(project(":common"))
 }
 
 val shadowJar = tasks.named<ShadowJar>("shadowJar") {
