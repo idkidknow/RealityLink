@@ -14,6 +14,10 @@ dependencies {
     runtimeOnly(libs.ktoml.core)
     runtimeOnly(libs.kotlinx.coroutines.core)
     runtimeOnly(libs.kotlinx.serialization.json)
+    "forgeRuntimeLibrary"(libs.kotlin.logging)
+    "forgeRuntimeLibrary"(libs.ktoml.core)
+    "forgeRuntimeLibrary"(libs.kotlinx.coroutines.core)
+    "forgeRuntimeLibrary"(libs.kotlinx.serialization.json)
 
     // ktor
     runtimeOnly(libs.ktor.server.core)
