@@ -20,7 +20,14 @@ dependencies {
     runtimeOnly(libs.ktor.server.core)
     runtimeOnly(libs.ktor.server.websockets)
     runtimeOnly(libs.ktor.server.netty) {
-        exclude(group = "io.netty")
+        exclude(group = "io.netty", module = "netty-buffer")
+        exclude(group = "io.netty", module = "netty-codec")
+        exclude(group = "io.netty", module = "netty-common")
+        exclude(group = "io.netty", module = "netty-handler")
+        exclude(group = "io.netty", module = "netty-resolver")
+        exclude(group = "io.netty", module = "netty-transport-class-epoll")
+        exclude(group = "io.netty", module = "transport-native-unix-common")
+        exclude(group = "io.netty", module = "netty-transport")
     }
     runtimeOnly(libs.ktor.serialization.kotlinx.json)
 }

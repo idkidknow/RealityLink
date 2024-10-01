@@ -69,7 +69,7 @@ class ApiServer(
                         val scope = CoroutineScope(SupervisorJob() + this@coroutineScope.coroutineContext)
                         val handler = broadcastingMessage.register { (component) ->
                             val response = component.toChatResponse(minecraftServer, config.language)
-                            logger.info { "1,$response" }
+                            logger.debug { "sending response: $response" }
                             scope.launch {
                                 sendSerialized(response)
                             }
