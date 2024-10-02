@@ -1,45 +1,63 @@
 package com.idkidknow.mcrealcomm
 
-import com.akuleshov7.ktoml.Toml
 import com.idkidknow.mcrealcomm.api.server.ApiServer
 import com.idkidknow.mcrealcomm.api.server.ApiServerConfig
-import com.idkidknow.mcrealcomm.event.BroadCastingMessageEventManager
+import com.idkidknow.mcrealcomm.command.realcommCommandBuilder
 import com.idkidknow.mcrealcomm.event.BroadcastingMessageEvent
-import com.idkidknow.mcrealcomm.event.EventManager
-import com.idkidknow.mcrealcomm.event.EventManagerProxy
-import com.idkidknow.mcrealcomm.l10n.ServerLanguageFactory
+import com.idkidknow.mcrealcomm.event.ModEvents
+import com.idkidknow.mcrealcomm.event.SetEventManagerProxy
+import com.idkidknow.mcrealcomm.event.SetUnitEventManagerProxy
+import com.idkidknow.mcrealcomm.l10n.LanguageLoadingException
 import com.idkidknow.mcrealcomm.platform.PlatformApi
 import com.idkidknow.mcrealcomm.platform.ServerLifecycleEventManagers
 import io.github.oshai.kotlinlogging.KotlinLogging
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.serializer
 import net.minecraft.server.MinecraftServer
-import java.nio.file.Files
 import kotlin.concurrent.thread
 
 private val logger = KotlinLogging.logger {}
 
 const val MOD_ID = "realcomm"
 
-fun modInit(platformApi: PlatformApi) {
+fun platformEntry(platformApi: PlatformApi) {
+    modInit(platformApi, ModEvents())
+}
+
+/** Initialization all root events and bind ModContext's lifetime to the Minecraft server */
+fun modInit(platformApi: PlatformApi, modEvents: ModEvents) {
     logger.info { "Reality Communication mod initializing" }
+
+    val registerCommandsEvent = platformApi.createRegisterCommandsEventManager()
+    registerCommandsEvent.addHandler { (dispatcher,_, _) ->
+        val builder = realcommCommandBuilder(
+            startAction = { modEvents.callingStartCommand(Unit) },
+            stopAction = { modEvents.callingStopCommand(Unit) },
+        )
+        dispatcher.register(builder)
+    }
+
     val lifecycleEvents = platformApi.createServerLifecycleEventManagers()
     lifecycleEvents.serverStarting.addHandler { (server) ->
-        onServerStarting(platformApi, server, lifecycleEvents)
+        onServerStarting(platformApi, server, lifecycleEvents, modEvents)
     }
 }
 
 /** Manage the lifecycle of ModContext */
-fun onServerStarting(api: PlatformApi, server: MinecraftServer, lifecycleEvents: ServerLifecycleEventManagers) {
+fun onServerStarting(
+    api: PlatformApi,
+    server: MinecraftServer,
+    lifecycleEvents: ServerLifecycleEventManagers,
+    modEvents: ModEvents,
+) {
     logger.info { "Minecraft server starting" }
 
     val ctx = ModContext(
         platformApi = api,
         server = server,
-        broadcastingMessageEventManager = BroadCastingMessageEventManager,
+        modEvents = modEvents,
     )
 
     lifecycleEvents.serverStopping.addHandler {_ ->
+        // on server stopping
         logger.info { "Minecraft server stopping" }
         ctx.stop()
         thread {
@@ -51,18 +69,28 @@ fun onServerStarting(api: PlatformApi, server: MinecraftServer, lifecycleEvents:
 class ModContext(
     val platformApi: PlatformApi,
     val server: MinecraftServer,
-    broadcastingMessageEventManager: EventManager<BroadcastingMessageEvent>,
+    modEvents: ModEvents,
 ) {
     private val logger = KotlinLogging.logger {}
 
     val gameDir get() = platformApi.getGameRootDir()
     val configDir get() = platformApi.getGameConfigDir()
 
-    private val broadcastingMessage = EventManagerProxy<BroadcastingMessageEvent>(broadcastingMessageEventManager)
+    private val broadcastingMessage = SetUnitEventManagerProxy<BroadcastingMessageEvent>(modEvents.broadcastingMessage)
+    private val callingStartCommand = SetEventManagerProxy<Unit, Exception?>(
+        modEvents.callingStartCommand,
+        defaultValue = null,
+        foldFunction = { result, invokeNext -> result ?: invokeNext() },
+    )
+    private val callingStopCommand = SetUnitEventManagerProxy<Unit>(modEvents.callingStopCommand)
+
     private var apiServer: ApiServer? = null
 
     init {
-        readApiServerConfig().getOrNull()?.let {
+        callingStartCommand.addHandler { readConfigAndStartApiServer() }
+        callingStopCommand.addHandler { stopApiServer() }
+
+        readApiServerConfig(configDir, gameDir, server).getOrNull()?.let {
             val (apiServerConfig, autoStart) = it
             if (autoStart) {
                 logger.info { "autoStart = true" }
@@ -71,7 +99,21 @@ class ModContext(
         }
     }
 
-    /** @return `false` if a server has already started */
+    sealed class ApiServerStartingException(msg: String, cause: Exception? = null): Exception(msg, cause) {
+        class AlreadyStarted: ApiServerStartingException("Already started")
+        data class LanguageLoading(val e: LanguageLoadingException): ApiServerStartingException("Failed to load language", e)
+    }
+    private fun readConfigAndStartApiServer(): ApiServerStartingException? {
+        val (apiServerConfig, _) = readApiServerConfig(configDir, gameDir, server).getOrElse { e ->
+            if (e is LanguageLoadingException) return ApiServerStartingException.LanguageLoading(e) else throw e
+        }
+        if (!startApiServer(apiServerConfig)) {
+            return ApiServerStartingException.AlreadyStarted()
+        }
+        return null
+    }
+
+    /** @return false if already started */
     fun startApiServer(config: ApiServerConfig): Boolean {
         if (apiServer != null) return false
         logger.info { "Starting api server" }
@@ -81,38 +123,13 @@ class ModContext(
 
     fun stopApiServer() {
         apiServer?.stop()
+        apiServer = null
     }
 
     fun stop() {
         stopApiServer()
         broadcastingMessage.removeProxy()
-    }
-
-    data class ReadApiServerConfig(val config: ApiServerConfig, val autoStart: Boolean)
-    fun readApiServerConfig(): Result<ReadApiServerConfig> {
-        @Serializable
-        data class ServerToml(
-            val port: Int = 39244,
-            val localeCode: String = "en_us",
-            val resourcePackDir: String = "serverlang",
-            val autoStart: Boolean = false,
-        )
-
-        val path = configDir.resolve(MOD_ID).resolve("server.toml")
-        val config = if (!Files.exists(path)) ServerToml() else Toml.decodeFromString(serializer(), Files.readString(path))
-
-        val resPackDir = gameDir.resolve(config.resourcePackDir)
-        val fallbackLanguage = ServerLanguageFactory.fromJavaResource(server, config.localeCode)
-        val resPackLanguage = ServerLanguageFactory.fromResourcePackDir(resPackDir, config.localeCode).getOrElse {
-            logger.error(it) {}
-            return Result.failure(it)
-        }
-        return Result.success(ReadApiServerConfig(
-            config = ApiServerConfig(
-                port = config.port,
-                language = ServerLanguageFactory.compose(resPackLanguage, fallbackLanguage),
-            ),
-            autoStart = config.autoStart,
-        ))
+        callingStartCommand.removeProxy()
+        callingStopCommand.removeProxy()
     }
 }

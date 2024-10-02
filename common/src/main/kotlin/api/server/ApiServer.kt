@@ -1,8 +1,8 @@
 package com.idkidknow.mcrealcomm.api.server
 
 import com.idkidknow.mcrealcomm.event.BroadcastingMessageEvent
-import com.idkidknow.mcrealcomm.event.EventManager
-import com.idkidknow.mcrealcomm.event.EventManagerProxy
+import com.idkidknow.mcrealcomm.event.SetUnitEventManagerProxy
+import com.idkidknow.mcrealcomm.event.UnitEventManager
 import com.idkidknow.mcrealcomm.event.noBroadCastingMessageEventCurrentThread
 import com.idkidknow.mcrealcomm.event.register
 import com.idkidknow.mcrealcomm.l10n.ServerTranslate
@@ -48,11 +48,11 @@ private sealed interface ChatRequest {
 private data class ChatResponse(val json: String, val translatedText: String)
 
 class ApiServer(
-    broadcastingMessageEventManager: EventManager<BroadcastingMessageEvent>,
+    broadcastingMessageEventManager: UnitEventManager<BroadcastingMessageEvent>,
     val config: ApiServerConfig,
     minecraftServer: MinecraftServer,
 ) {
-    val broadcastingMessage = EventManagerProxy<BroadcastingMessageEvent>(broadcastingMessageEventManager)
+    val broadcastingMessage = SetUnitEventManagerProxy<BroadcastingMessageEvent>(broadcastingMessageEventManager)
     val job: Job
 
     init {

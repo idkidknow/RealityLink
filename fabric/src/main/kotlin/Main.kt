@@ -1,8 +1,8 @@
 package com.idkidknow.mcrealcomm.fabric
 
 import com.idkidknow.mcrealcomm.fabric.platform.FabricApi
-import com.idkidknow.mcrealcomm.modInit
+import com.idkidknow.mcrealcomm.platformEntry
 
 fun fabricModInit() {
-    modInit(FabricApi())
+    platformEntry(FabricApi())
 }

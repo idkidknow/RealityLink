@@ -1,8 +1,8 @@
 package com.idkidknow.mcrealcomm.neoforge.platform
 
-import com.idkidknow.mcrealcomm.event.EventManager
-import com.idkidknow.mcrealcomm.platform.CommonEventManagers
+import com.idkidknow.mcrealcomm.event.UnitEventManager
 import com.idkidknow.mcrealcomm.platform.PlatformApi
+import com.idkidknow.mcrealcomm.platform.RegisterCommandsEvent
 import com.idkidknow.mcrealcomm.platform.ServerLifecycleEventManagers
 import com.idkidknow.mcrealcomm.platform.ServerStartingEvent
 import com.idkidknow.mcrealcomm.platform.ServerStoppingEvent
@@ -11,14 +11,14 @@ import java.nio.file.Path
 
 class NeoForgeApi: PlatformApi {
     override fun createServerLifecycleEventManagers(): ServerLifecycleEventManagers {
-        val serverStarting: EventManager<ServerStartingEvent> =
-            eventManagerFromNeoForge {handler ->
+        val serverStarting: UnitEventManager<ServerStartingEvent> =
+            eventManagerFromNeoForge { handler ->
                 { event: net.neoforged.neoforge.event.server.ServerStartingEvent ->
                     handler(ServerStartingEvent(event.server))
                 }
             }
-        val serverStopping: EventManager<ServerStoppingEvent> =
-            eventManagerFromNeoForge {handler ->
+        val serverStopping: UnitEventManager<ServerStoppingEvent> =
+            eventManagerFromNeoForge { handler ->
                 { event: net.neoforged.neoforge.event.server.ServerStoppingEvent ->
                     handler(ServerStoppingEvent(event.server))
                 }
@@ -26,8 +26,10 @@ class NeoForgeApi: PlatformApi {
         return ServerLifecycleEventManagers(serverStarting, serverStopping)
     }
 
-    override fun createCommonEventManagers(): CommonEventManagers {
-        return CommonEventManagers(Unit)
+    override fun createRegisterCommandsEventManager(): UnitEventManager<RegisterCommandsEvent> = eventManagerFromNeoForge { handler ->
+        { event : net.neoforged.neoforge.event.RegisterCommandsEvent ->
+            handler(RegisterCommandsEvent(event.dispatcher, event.commandSelection, event.buildContext))
+        }
     }
 
     override fun getGameRootDir(): Path {

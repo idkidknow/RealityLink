@@ -1,10 +1,12 @@
 package com.idkidknow.mcrealcomm.fabric.platform
 
-import com.idkidknow.mcrealcomm.platform.CommonEventManagers
+import com.idkidknow.mcrealcomm.event.UnitEventManager
 import com.idkidknow.mcrealcomm.platform.PlatformApi
+import com.idkidknow.mcrealcomm.platform.RegisterCommandsEvent
 import com.idkidknow.mcrealcomm.platform.ServerLifecycleEventManagers
 import com.idkidknow.mcrealcomm.platform.ServerStartingEvent
 import com.idkidknow.mcrealcomm.platform.ServerStoppingEvent
+import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
 import net.fabricmc.loader.api.FabricLoader
 import java.nio.file.Path
@@ -22,8 +24,11 @@ class FabricApi: PlatformApi {
         return ServerLifecycleEventManagers(serverStarting, serverStopping)
     }
 
-    override fun createCommonEventManagers(): CommonEventManagers {
-        return CommonEventManagers(Unit)
+    override fun createRegisterCommandsEventManager(): UnitEventManager<RegisterCommandsEvent> =
+        eventManagerFromFabric(CommandRegistrationCallback.EVENT) { handler ->
+            CommandRegistrationCallback { dispatcher, context, environment ->
+                handler(RegisterCommandsEvent(dispatcher, environment, context))
+            }
     }
 
     override fun getGameRootDir(): Path {
