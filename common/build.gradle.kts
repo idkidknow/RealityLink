@@ -1,5 +1,3 @@
-import org.gradle.kotlin.dsl.add
-
 plugins {
     id("realcomm.common")
     id("realcomm.common-deps")

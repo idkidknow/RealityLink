@@ -3,6 +3,7 @@ package com.idkidknow.mcrealcomm.api.server
 import com.idkidknow.mcrealcomm.event.BroadcastingMessageEvent
 import com.idkidknow.mcrealcomm.event.EventManager
 import com.idkidknow.mcrealcomm.event.EventManagerProxy
+import com.idkidknow.mcrealcomm.event.noBroadCastingMessageEventCurrentThread
 import com.idkidknow.mcrealcomm.event.register
 import com.idkidknow.mcrealcomm.l10n.ServerTranslate
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -79,7 +80,9 @@ class ApiServer(
                             } catch (_: Exception) {
                                 continue
                             }
-                            minecraftServer.playerList.broadcastSystemMessage(component, false)
+                            minecraftServer.playerList.noBroadCastingMessageEventCurrentThread {
+                                broadcastSystemMessage(component, false)
+                            }
                         }
                         handler.unregister()
                     }

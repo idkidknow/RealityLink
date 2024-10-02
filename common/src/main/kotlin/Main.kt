@@ -3,10 +3,10 @@ package com.idkidknow.mcrealcomm
 import com.akuleshov7.ktoml.Toml
 import com.idkidknow.mcrealcomm.api.server.ApiServer
 import com.idkidknow.mcrealcomm.api.server.ApiServerConfig
+import com.idkidknow.mcrealcomm.event.BroadCastingMessageEventManager
 import com.idkidknow.mcrealcomm.event.BroadcastingMessageEvent
 import com.idkidknow.mcrealcomm.event.EventManager
 import com.idkidknow.mcrealcomm.event.EventManagerProxy
-import com.idkidknow.mcrealcomm.event.broadcastingMessageEventManager
 import com.idkidknow.mcrealcomm.l10n.ServerLanguageFactory
 import com.idkidknow.mcrealcomm.platform.PlatformApi
 import com.idkidknow.mcrealcomm.platform.ServerLifecycleEventManagers
@@ -36,7 +36,7 @@ fun onServerStarting(api: PlatformApi, server: MinecraftServer, lifecycleEvents:
     val ctx = ModContext(
         platformApi = api,
         server = server,
-        broadcastingMessageEventManager = broadcastingMessageEventManager,
+        broadcastingMessageEventManager = BroadCastingMessageEventManager,
     )
 
     lifecycleEvents.serverStopping.addHandler {_ ->
