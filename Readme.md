@@ -5,8 +5,16 @@ A neat Minecraft in-game chat interacting API with server-side l10n support, sui
 ## Usage
 
 This mod runs on a Minecraft server and
-establishes a gRPC server. Check
-the proto file at `common/src/main/proto/realcomm.proto`.
+establishes a WebSocket server.
+The server sends in-game chat messages as text frame
+`{"json": ${raw JSON text format}, "translatedText": ${sever-side translated text}}`
+to clients. ([Raw JSON text format](https://minecraft.wiki/w/Raw_JSON_text_format))
+
+Send `{"type": "literal", "text": ${your message}}`
+to broadcast a literal message in the game.
+
+Send `{"type": "json", "json": ${raw JSON text format}}`
+to broadcast a rich message in the game.
 
 ### Preparing
 
@@ -22,42 +30,47 @@ other than `en_us.json`. For users that speak other languages,
 download Minecraft's language resources `assets/minecraft/lang/*.json`
 on https://mcasset.cloud/, create a zip file of the `assets` folder.
 Now the zip archive is virtually a resource pack
-(without metadata `pack.mcmeta`. It doesn't matter) so simply do the
+(without metadata `pack.mcmeta`. It doesn't matter.) so simply do the
 things that the previous paragraph tells you to do.
 
 ### Configuration
 
-create a json file like and put it in `config/realcomm/`:
-```json
-{
-  "port": 11451,
-  "localeCode": "zh_cn",
-  "resourcePacksDir" : "serverlang",
-  "certChain": "server_cert.pem",
-  "privateKey": "server_pkcs8.key",
-  "trustCerts": "client_cert.pem"
-}
+create a toml file `config/realcomm/server.toml`:
+```toml
+port = 39244
+localeCode = "en_us"
+resourcePackDir = "serverlang"
+autoStart = true
 ```
 
-- `port`: The port gRPC server listens
+- `port`: The port server listens
 - `localeCode`: See https://minecraft.wiki/w/Language
 - `resourcePacksDir`: The folder where resource packs are stored.
-Relative path will be resolved by the Minecraft game's root path
+Absolute path, or relative to the Minecraft game's root path
 (where the game's jar file is)
+- `autoStart`: Start the API server automatically
+when Minecraft server starting
 
-Next 3 fields are optional. If provided, gRPC server will use (m)TLS
-to authenticate.
-They are all file paths. Relative path will be resolved by `config/realcomm/`
-- `certChain`: The server's certificate
+#### TLS/mTLS
+
+Append these lines in `server.toml`:
+```toml
+certChain = "server_cert.pem"
+privateKey = "server_pkcs8.key"
+# root = "client_cert.pem" # optional
+```
+
+Absolute path, or relative to `config/realcomm/`
+- `certChain`: The server's certificate chain
 - `privateKey`: The private key in PKCS #8 format
-- optional `trustCerts`: Trusted root certificates, used to verify
-certificates of clients.
-Use normal TLS if not provided, otherwise mutual TLS will be enabled.
+- optional `root`: Trusted root certificates, used to verify
+certificates of clients. 
+Use normal TLS if not provided, otherwise enable mutual TLS.
 
 ### Launch
 
 Start the Minecraft server, and then
-use the command `/realcomm start {yourfilename}.json` to launch the
-gRPC server.
+use the command `/realcomm start` to launch the API server.
 
-gRPC server will be launched automatically if there's a `autostart.json`.
+The server will be launched automatically if `autoStart = true` in
+`server.toml`.
