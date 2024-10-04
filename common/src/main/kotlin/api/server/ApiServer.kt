@@ -6,6 +6,7 @@ import com.idkidknow.mcrealcomm.event.UnitEventManager
 import com.idkidknow.mcrealcomm.event.noBroadCastingMessageEventCurrentThread
 import com.idkidknow.mcrealcomm.event.register
 import com.idkidknow.mcrealcomm.l10n.ServerTranslate
+import com.idkidknow.mcrealcomm.l10n.logger
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.serialization.WebsocketContentConverter
 import io.ktor.server.application.install
@@ -17,9 +18,14 @@ import io.ktor.server.websocket.webSocket
 import io.ktor.serialization.deserialize
 import io.ktor.serialization.kotlinx.KotlinxWebsocketSerializationConverter
 import io.ktor.server.engine.EmbeddedServer
+import io.ktor.server.engine.applicationEnvironment
+import io.ktor.server.engine.connector
 import io.ktor.server.netty.Netty
+import io.ktor.server.netty.NettyApplicationEngine
 import io.ktor.server.websocket.sendSerialized
 import io.ktor.websocket.Frame
+import io.netty.handler.ssl.SslContextBuilder
+import io.netty.handler.ssl.SslHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -58,14 +64,43 @@ class ApiServer(
     init {
         suspend fun init(): EmbeddedServer<*, *> = coroutineScope {
             logger.info { "port: ${config.port}" }
-            embeddedServer(Netty, port = config.port) {
+            val configure: NettyApplicationEngine.Configuration.() -> Unit = configure@{
+                connector {
+                    port = config.port
+                }
+
+                val sslContext = when (config.tlsConfig) {
+                    is TlsConfig.None -> {
+                        return@configure
+                    }
+                    is TlsConfig.Tls -> {
+                        val (certChain, privateKey) = config.tlsConfig
+                        SslContextBuilder.forServer(certChain, privateKey).build()
+                    }
+                    is TlsConfig.MutualTls -> {
+                        val (certChain, privateKey, root) = config.tlsConfig
+                        SslContextBuilder.forServer(certChain, privateKey).trustManager(root).build()
+                    }
+                }
+                channelPipelineConfig = {
+                    val engine = sslContext.newEngine(channel().alloc()).apply {
+                        useClientMode = false
+                        if (config.tlsConfig is TlsConfig.MutualTls) {
+                            needClientAuth = true
+                        }
+                    }
+                    addFirst(SslHandler(engine))
+                }
+            }
+
+            embeddedServer(Netty, applicationEnvironment(), configure) {
                 install(WebSockets) {
                     contentConverter = KotlinxWebsocketSerializationConverter(Json)
                 }
                 routing {
                     webSocket("/minecraft-chat") {
                         // Observe in-game chat
-                        val scope = CoroutineScope(SupervisorJob() + this@coroutineScope.coroutineContext)
+                        val scope = CoroutineScope(coroutineContext + SupervisorJob())
                         val handler = broadcastingMessage.register { (component) ->
                             val response = component.toChatResponse(minecraftServer, config.language)
                             logger.debug { "sending response: $response" }

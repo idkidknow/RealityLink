@@ -33,6 +33,7 @@ dependencies {
         exclude(group = "io.netty", module = "transport-native-unix-common")
         exclude(group = "io.netty", module = "netty-transport")
     }
+    commonImplementation(findLibrary("ktor-network-tls-certificates"))
     commonImplementation(findLibrary("ktor-serialization-kotlinx-json"))
 }
 
