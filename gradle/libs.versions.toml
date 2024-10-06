@@ -23,9 +23,9 @@ neoforge = { module = "net.neoforged:neoforge", version.ref = "neoforge" }
 parchment-mappings = { module = "org.parchmentmc.data:parchment-1.21", version.ref = "parchment-mappings" }
 
 kotlin-logging = { module = "io.github.oshai:kotlin-logging-jvm", version.ref = "kotlin-logging" }
-ktoml-core = { module = "com.akuleshov7:ktoml-core", version.ref = "ktoml" }
-kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version = "1.9.0" }
-kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version = "1.7.3" }
+ktoml-core = { module = "com.akuleshov7:ktoml-core-jvm", version.ref = "ktoml" }
+kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm", version = "1.9.0" }
+kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json-jvm", version = "1.7.3" }
 
 #ktor
 ktor-server-core = { module = "io.ktor:ktor-server-core-jvm", version.ref = "ktor" }

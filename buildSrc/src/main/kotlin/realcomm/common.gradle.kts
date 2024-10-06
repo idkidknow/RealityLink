@@ -27,7 +27,7 @@ repositories {
 }
 
 architectury {
-    compileOnly()
+    injectInjectables = false
     minecraft = libs.findVersion("minecraft").get().toString()
 }
 
