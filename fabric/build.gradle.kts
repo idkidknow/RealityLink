@@ -1,7 +1,6 @@
 plugins {
     id("realcomm.common")
     id("realcomm.platform")
-    id("realcomm.common-deps")
 }
 
 architectury {

@@ -2,7 +2,6 @@ package realcomm
 
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import net.fabricmc.loom.task.RemapJarTask
-import org.gradle.kotlin.dsl.exclude
 
 plugins {
     id("java")
@@ -17,50 +16,51 @@ architectury {
     platformSetupLoomIde()
 }
 
-@Suppress("UnstableApiUsage")
-configurations {
-    register("shadowCommon") {
-        isCanBeResolved = true
-        isCanBeConsumed = false
-    }
-    register("shadowDependencies") {
-        isCanBeResolved = true
-        isCanBeConsumed = false
-    }
+val shadowCommon = configurations.create("shadowCommon") {
+    isCanBeResolved = true
+    isCanBeConsumed = false
 }
+val commonDeps = configurations.create("commonDeps")
 
 dependencies {
     implementation(project(path = ":common", configuration = "namedElements"))
-    "shadowCommon"(project(path = ":common", configuration = "transformProduction$platform")) {
-        isTransitive = false
+    runtimeOnly(project(":common")) // Use transitive dependencies in dev mode. Why implementation namedElements cannot work?
+    afterEvaluate {
+        // Architectury transformer
+        "development$platform"(project(path = ":common", configuration = "namedElements")) { isTransitive = false }
     }
-    "shadowDependencies"(project(":common")) {
-        isTransitive = true
-        exclude(group = "com.idkidknow")
-        exclude(group = "net.fabricmc")
+    commonDeps(project(path = ":common", configuration = "commonDeps"))
+    if (platform == "NeoForge") {
+        "forgeRuntimeLibrary"(project(path = ":common", configuration = "commonDeps"))
+    }
+    shadowCommon(project(path = ":common", configuration = "transformProduction$platform")) {
+        isTransitive = false
     }
 }
 
-val shadowCommon = tasks.register<ShadowJar>("shadowCommon") {
-    configurations = listOf(project.configurations["shadowCommon"])
+val shadowCommonTask = tasks.register<ShadowJar>("shadowCommon") {
+    from(sourceSets.main.get().output)
+    configurations = listOf(shadowCommon)
     archiveClassifier = "dev-shadow-common"
 }
 
-val shadowJar = tasks.named<ShadowJar>("shadowJar") {
-    dependsOn(shadowCommon)
-    from(zipTree(shadowCommon.get().archiveFile))
-    configurations = listOf(project.configurations["shadowDependencies"])
-//    relocate("com", "com.idkidknow.mcrealcomm.shadow.com") {
-//        exclude("com/idkidknow/mcrealcomm/**/*")
-//    }
-//    relocate("org", "com.idkidknow.mcrealcomm.shadow.org")
-//    relocate("io", "com.idkidknow.mcrealcomm.shadow.io")
-//    relocate("kotlin", "com.idkidknow.mcrealcomm.shadow.kotlin")
-//    relocate("kotlinx", "com.idkidknow.mcrealcomm.shadow.kotlinx")
-    archiveClassifier = "dev-shadow"
+commonDeps.resolvedConfiguration.resolvedArtifacts.forEach { artifact ->
+    val id = artifact.moduleVersion.id
+    val dep = mutableMapOf(
+        "group" to id.group,
+        "name" to id.name,
+        "version" to id.version,
+    )
+    artifact.classifier?.let {
+        dep["classifier"] = it
+    }
+    artifact.extension?.let {
+        dep["ext"] = it
+    }
+    dependencies.add(net.fabricmc.loom.util.Constants.Configurations.INCLUDE, dep)
 }
 
-tasks.named<RemapJarTask>("remapJar") {
-    dependsOn(shadowJar)
-    inputFile.set(shadowJar.flatMap { it.archiveFile })
+val remapJarTask = tasks.named<RemapJarTask>("remapJar") {
+    dependsOn(shadowCommonTask)
+    inputFile.set(shadowCommonTask.flatMap { it.archiveFile })
 }

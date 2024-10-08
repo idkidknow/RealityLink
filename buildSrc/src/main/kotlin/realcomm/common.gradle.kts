@@ -37,7 +37,6 @@ loom {
 
 dependencies {
     minecraft(libs.findLibrary("minecraft").get())
-    @Suppress("UnstableApiUsage")
     mappings(loom.layered {
         officialMojangMappings()
         parchment(libs.findLibrary("parchment-mappings").get())
