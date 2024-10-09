@@ -7,9 +7,7 @@ neoforge = "21.0.167"
 parchment-mappings = "2024.07.28"
 
 kotlin = "2.0.20"
-kotlin-logging = "7.0.0"
-ktoml = "0.5.1"
-ktor = "3.0.0-rc-1"
+javalin = "6.3.0"
 
 architectury-plugin = "3.4.159"
 architectury-loom = "1.7.413"
@@ -22,17 +20,11 @@ fabric-api = { module = "net.fabricmc.fabric-api:fabric-api", version.ref = "fab
 neoforge = { module = "net.neoforged:neoforge", version.ref = "neoforge" }
 parchment-mappings = { module = "org.parchmentmc.data:parchment-1.21", version.ref = "parchment-mappings" }
 
-kotlin-logging = { module = "io.github.oshai:kotlin-logging-jvm", version.ref = "kotlin-logging" }
-ktoml-core = { module = "com.akuleshov7:ktoml-core-jvm", version.ref = "ktoml" }
-kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm", version = "1.9.0" }
+kotlin-logging = { module = "io.github.oshai:kotlin-logging-jvm", version = "7.0.0" }
+ktoml-core = { module = "com.akuleshov7:ktoml-core-jvm", version = "0.5.1" }
+javalin = { module = "io.javalin:javalin", version.ref = "javalin" }
+javalin-ssl-plugin = { module = "io.javalin.community.ssl:ssl-plugin", version.ref = "javalin" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json-jvm", version = "1.7.3" }
-
-#ktor
-ktor-server-core = { module = "io.ktor:ktor-server-core-jvm", version.ref = "ktor" }
-ktor-server-websockets = { module = "io.ktor:ktor-server-websockets-jvm", version.ref = "ktor" }
-ktor-server-netty = { module = "io.ktor:ktor-server-netty-jvm", version.ref = "ktor" }
-ktor-network-tls-certificates = { module = "io.ktor:ktor-network-tls-certificates", version.ref = "ktor" }
-ktor-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktor" }
 
 # plugins as libraries, used in convetion plugins
 architectury-plugin = { module = "architectury-plugin:architectury-plugin.gradle.plugin", version.ref = "architectury-plugin" }
@@ -49,4 +41,3 @@ shadow = { id = "com.gradleup.shadow", version.ref = "shadow" }
 
 kotlin = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
-ktor = { id = "io.ktor.plugin", version.ref = "ktor" }

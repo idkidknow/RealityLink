@@ -24,15 +24,20 @@ val commonDeps = configurations.create("commonDeps")
 
 dependencies {
     implementation(project(path = ":common", configuration = "namedElements"))
-    runtimeOnly(project(":common")) // Use transitive dependencies in dev mode. Why implementation namedElements cannot work?
     afterEvaluate {
         // Architectury transformer
         "development$platform"(project(path = ":common", configuration = "namedElements")) { isTransitive = false }
     }
     commonDeps(project(path = ":common", configuration = "commonDeps"))
+
+    // Make them happy at dev mode
     if (platform == "NeoForge") {
         "forgeRuntimeLibrary"(project(path = ":common", configuration = "commonDeps"))
     }
+    if (platform == "Fabric") {
+        runtimeOnly(project(path = ":common", configuration = "commonDeps"))
+    }
+
     shadowCommon(project(path = ":common", configuration = "transformProduction$platform")) {
         isTransitive = false
     }
