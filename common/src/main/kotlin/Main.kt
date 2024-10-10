@@ -2,6 +2,7 @@ package com.idkidknow.mcrealcomm
 
 import com.idkidknow.mcrealcomm.api.server.ApiServer
 import com.idkidknow.mcrealcomm.api.server.ApiServerConfig
+import com.idkidknow.mcrealcomm.api.server.createApiServer
 import com.idkidknow.mcrealcomm.command.realcommCommandBuilder
 import com.idkidknow.mcrealcomm.event.BroadcastingMessageEvent
 import com.idkidknow.mcrealcomm.event.ModEvents
@@ -117,7 +118,9 @@ class ModContext(
     fun startApiServer(config: ApiServerConfig): Boolean {
         if (apiServer != null) return false
         logger.info { "Starting api server" }
-        apiServer = ApiServer(broadcastingMessage, config, server)
+
+        apiServer = createApiServer(broadcastingMessage, config, server)
+        apiServer!!.start()
         return true
     }
 
