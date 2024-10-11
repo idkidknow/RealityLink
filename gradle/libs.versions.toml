@@ -9,7 +9,7 @@ parchment-mappings = "2024.07.28"
 kotlin = "2.0.20"
 kotlin-logging = "7.0.0"
 ktoml = "0.5.1"
-ktor = "3.0.0-rc-1"
+ktor = "3.0.0"
 
 architectury-plugin = "3.4.159"
 architectury-loom = "1.7.413"

@@ -44,7 +44,6 @@ import net.minecraft.network.chat.Component
 import net.minecraft.server.MinecraftServer
 import kotlin.concurrent.thread
 import kotlin.time.Duration.Companion.seconds
-import kotlin.time.toJavaDuration
 
 private val logger = KotlinLogging.logger {}
 
@@ -114,8 +113,8 @@ fun CoroutineScope.createApiServer(
 
     private fun Application.module() {
         install(WebSockets) {
-            pingPeriod = 15.seconds.toJavaDuration()
-            timeout = 10.seconds.toJavaDuration()
+            pingPeriod = 15.seconds
+            timeout = 10.seconds
             contentConverter = KotlinxWebsocketSerializationConverter(Json)
         }
         routing {
