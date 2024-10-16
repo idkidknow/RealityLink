@@ -1,6 +1,7 @@
 package com.idkidknow.mcrealcomm.command
 
-import com.idkidknow.mcrealcomm.ModContext
+import com.idkidknow.mcrealcomm.MOD_ID
+import com.idkidknow.mcrealcomm.ModMain
 import com.idkidknow.mcrealcomm.l10n.LanguageLoadingException
 import io.github.oshai.kotlinlogging.KotlinLogging
 import net.minecraft.commands.Commands
@@ -8,10 +9,10 @@ import net.minecraft.network.chat.Component
 
 private val logger = KotlinLogging.logger {}
 
-fun realcommCommandBuilder(
+fun modCommandBuilder(
     startAction: () -> Exception?,
     stopAction: () -> Unit,
-) = Commands.literal("realcomm")
+) = Commands.literal(MOD_ID)
     .requires { it.hasPermission(2) }
     .then(startCommandBuilder(startAction))
     .then(stopCommandBuilder(stopAction))
@@ -25,12 +26,12 @@ private fun startCommandBuilder(startAction: () -> Exception?) =
                 return@executes 1
             }
 
-            is ModContext.ApiServerStartingException.AlreadyStarted -> {
+            is ModMain.StartApiServerException.AlreadyStarted -> {
                 context.source.sendFailure(Component.literal("Already started."))
                 return@executes -1
             }
 
-            is ModContext.ApiServerStartingException.LanguageLoading -> {
+            is ModMain.StartApiServerException.LanguageLoading -> {
                 val (e) = ret
                 logger.error(e) { "$e" }
                 when (e) {

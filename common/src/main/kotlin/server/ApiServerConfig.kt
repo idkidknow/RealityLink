@@ -1,4 +1,4 @@
-package com.idkidknow.mcrealcomm.api.server
+package com.idkidknow.mcrealcomm.server
 
 import com.idkidknow.mcrealcomm.l10n.ServerLanguage
 import java.io.File

@@ -1,14 +1,13 @@
 package com.idkidknow.mcrealcomm
 
 import com.akuleshov7.ktoml.Toml
-import com.idkidknow.mcrealcomm.api.server.ApiServerConfig
-import com.idkidknow.mcrealcomm.api.server.TlsConfig
+import com.idkidknow.mcrealcomm.server.ApiServerConfig
+import com.idkidknow.mcrealcomm.server.TlsConfig
 import com.idkidknow.mcrealcomm.l10n.ServerLanguageFactory
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.serializer
 import net.minecraft.server.MinecraftServer
-import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
 

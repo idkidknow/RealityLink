@@ -3,12 +3,17 @@ rootProject.name = "RealityCommunication"
 pluginManagement {
     repositories {
         gradlePluginPortal()
-        maven { url = uri("https://maven.architectury.dev/") }
-        maven { url = uri("https://files.minecraftforge.net/maven/") }
-        maven { url = uri("https://maven.fabricmc.net/") }
+        mavenCentral()
+        maven("https://files.minecraftforge.net/maven/")
+        maven("https://maven.fabricmc.net/")
     }
 }
 
+plugins {
+    id("org.gradle.toolchains.foojay-resolver-convention") version "0.8.0"
+}
+
 include("common")
+include("mixin")
 include("neoforge")
 include("fabric")

@@ -3,15 +3,24 @@ package realcomm
 plugins {
     id("java")
     kotlin("jvm")
-    id("dev.architectury.loom")
-    id("architectury-plugin")
 }
 
-group = property("maven_group").toString()
-version = property("mod_version").toString()
-
-// https://github.com/gradle/gradle/issues/15383#issuecomment-1940357260
-val libs = versionCatalogs.named("libs")
+repositories {
+    mavenCentral()
+    exclusiveContent {
+        forRepository {
+            maven("https://repo.spongepowered.org/repository/maven-public")
+        }
+        filter { includeGroupAndSubgroups("org.spongepowered") }
+    }
+    exclusiveContent {
+        forRepositories(
+            maven("https://maven.parchmentmc.org/"),
+            maven("https://maven.neoforged.net/releases"),
+        )
+        filter { includeGroup("org.parchmentmc.data") }
+    }
+}
 
 java {
     withSourcesJar()
@@ -20,25 +29,13 @@ java {
     targetCompatibility = JavaVersion.VERSION_21
 }
 
-repositories {
-    mavenCentral()
-    maven { url = uri("https://maven.parchmentmc.org") }
-    maven { url = uri("https://maven.neoforged.net/releases") }
-}
-
-architectury {
-    injectInjectables = false
-    minecraft = libs.findVersion("minecraft").get().toString()
-}
-
-loom {
-    silentMojangMappingsLicense()
-}
-
-dependencies {
-    minecraft(libs.findLibrary("minecraft").get())
-    mappings(loom.layered {
-        officialMojangMappings()
-        parchment(libs.findLibrary("parchment-mappings").get())
-    })
+tasks.named<ProcessResources>("processResources") {
+    val props = mapOf(
+        "version" to ModConstant.version,
+        "mod_id" to ModConstant.id,
+    )
+    inputs.properties(props)
+    filesMatching(listOf("fabric.mod.json", "META-INF/neoforge.mods.toml", "META-INF/mods.toml", "*.mixins.json")) {
+        expand(props)
+    }
 }

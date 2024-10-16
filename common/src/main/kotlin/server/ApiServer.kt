@@ -1,11 +1,8 @@
-package com.idkidknow.mcrealcomm.api.server
+package com.idkidknow.mcrealcomm.server
 
-import com.idkidknow.mcrealcomm.event.BroadcastingMessageEvent
-import com.idkidknow.mcrealcomm.event.SetUnitEventManagerProxy
-import com.idkidknow.mcrealcomm.event.UnitEventManager
-import com.idkidknow.mcrealcomm.event.noBroadCastingMessageEventCurrentThread
-import com.idkidknow.mcrealcomm.event.register
-import com.idkidknow.mcrealcomm.l10n.ServerTranslate
+import com.idkidknow.mcrealcomm.api.UnitCallbackRegistry
+import com.idkidknow.mcrealcomm.api.register
+import com.idkidknow.mcrealcomm.context.ModContext
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.serialization.WebsocketContentConverter
 import io.ktor.serialization.kotlinx.KotlinxWebsocketSerializationConverter
@@ -64,16 +61,12 @@ private sealed interface ChatRequest {
 @Serializable
 private data class ChatResponse(val json: String, val translatedText: String)
 
-fun createApiServer(
-    broadcastingMessageEventManager: UnitEventManager<BroadcastingMessageEvent>,
-    config: ApiServerConfig,
-    minecraftServer: MinecraftServer,
-): ApiServer = object : ApiServer {
+fun ModContext.createApiServer(config: ApiServerConfig): ApiServer = object : ApiServer {
     private val scope = CoroutineScope(Job() + Dispatchers.IO)
     private var server: ApiServer? = null
 
     override fun start() {
-        server = scope.createApiServer(broadcastingMessageEventManager, config, minecraftServer)
+        server = scope.createApiServer(this@createApiServer, config)
         server!!.start()
     }
 
@@ -87,13 +80,10 @@ fun createApiServer(
 }
 
 fun CoroutineScope.createApiServer(
-    broadcastingMessageEventManager: UnitEventManager<BroadcastingMessageEvent>,
+    ctx: ModContext,
     config: ApiServerConfig,
-    minecraftServer: MinecraftServer,
 ): ApiServer = object : ApiServer {
     var server: EmbeddedServer<*, *>? = null
-
-    val broadcastingMessage = SetUnitEventManagerProxy<BroadcastingMessageEvent>(broadcastingMessageEventManager)
 
     override fun start() {
         server = embeddedServer<NettyApplicationEngine, NettyApplicationEngine.Configuration>(
@@ -123,8 +113,8 @@ fun CoroutineScope.createApiServer(
 
                 // Observe in-game chat
                 val scope = CoroutineScope(coroutineContext + SupervisorJob())
-                val handler = broadcastingMessage.register { (component) ->
-                    val response = component.toChatResponse(minecraftServer, config.language)
+                val handler = ctx.modEvents.broadcastingMessage.register { (component) ->
+                    val response = component.toChatResponse(ctx, config.language)
                     logger.debug { "sending response: $response" }
                     scope.launch {
                         sendSerialized(response)
@@ -135,13 +125,11 @@ fun CoroutineScope.createApiServer(
                     // Handle incoming
                     for (frame in incoming) {
                         val component = try {
-                            frame.toComponent(minecraftServer, converter!!)
+                            frame.toComponent(ctx.minecraftServer, converter!!)
                         } catch (_: Exception) {
                             continue
                         }
-                        minecraftServer.playerList.noBroadCastingMessageEventCurrentThread {
-                            broadcastSystemMessage(component, false)
-                        }
+                        ctx.broadcastMessageWithoutCallback(ctx.minecraftServer.playerList, component)
                     }
                 } finally {
                     scope.cancel()
@@ -185,9 +173,9 @@ fun CoroutineScope.createApiServer(
     }
 }
 
-private fun Component.toChatResponse(minecraftServer: MinecraftServer, language: Language): ChatResponse {
-    val json = Component.Serializer.toJson(this, minecraftServer.registryAccess())
-    val translatedText = ServerTranslate.translate(this, language)
+private fun Component.toChatResponse(ctx: ModContext, language: Language): ChatResponse {
+    val json = Component.Serializer.toJson(this, ctx.minecraftServer.registryAccess())
+    val translatedText = ctx.translate(this, language)
     return ChatResponse(json, translatedText)
 }
 
