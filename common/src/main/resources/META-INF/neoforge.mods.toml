@@ -1,0 +1,18 @@
+modLoader = "javafml"
+loaderVersion = "[4,)"
+license = "MIT"
+
+[[mods]]
+modId = "${mod_id}_common"
+version = "${version}"
+displayName = "Reality Communication common"
+authors = "idkana"
+description = ""
+displayTest = "IGNORE_SERVER_VERSION"
+
+[[dependencies.${mod_id}_common]]
+modId = "minecraft"
+type = "required"
+versionRange = "[1.21,)"
+ordering = "NONE"
+side = "BOTH"

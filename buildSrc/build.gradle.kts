@@ -9,4 +9,5 @@ repositories {
 dependencies {
     implementation(libs.kotlin.plugin)
     implementation(libs.moddev.plugin)
+    implementation(libs.shadow.plugin)
 }

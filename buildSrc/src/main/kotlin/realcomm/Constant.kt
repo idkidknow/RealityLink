@@ -13,4 +13,5 @@ object Versions {
     val parchment = "2024.07.28"
     val fabricLoader = "0.16.5"
     val fabricApi = "0.102.0+1.21"
+    val neoForge = "21.0.167"
 }

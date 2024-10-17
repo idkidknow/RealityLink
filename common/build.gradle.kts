@@ -3,7 +3,7 @@ import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 plugins {
     id("realcomm.common")
     id("realcomm.vanilla")
-    alias(libs.plugins.shadow)
+    id("com.gradleup.shadow")
     alias(libs.plugins.kotlin.serialization)
 }
 

@@ -29,13 +29,13 @@ java {
     targetCompatibility = JavaVersion.VERSION_21
 }
 
-tasks.named<ProcessResources>("processResources") {
+tasks.processResources {
     val props = mapOf(
         "version" to ModConstant.version,
         "mod_id" to ModConstant.id,
     )
     inputs.properties(props)
-    filesMatching(listOf("fabric.mod.json", "META-INF/neoforge.mods.toml", "META-INF/mods.toml", "*.mixins.json")) {
+    filesMatching(listOf("META-INF/*.toml", "*.json")) {
         expand(props)
     }
 }
