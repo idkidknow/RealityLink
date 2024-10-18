@@ -1,7 +1,7 @@
 package reallink
 
 object ModConstant {
-    val version = "0.1.0"
+    val version = "1.21-0.1.0"
     val group = "com.idkidknow.mcreallink"
     val id = "reallink"
 }
