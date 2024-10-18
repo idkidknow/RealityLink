@@ -7,13 +7,13 @@ A neat Minecraft in-game chat interacting API with server-side l10n support, sui
 This mod runs on a Minecraft server and
 establishes a WebSocket server.
 The server sends in-game chat messages as text frame
-`{"json": ${raw JSON text format}, "translatedText": ${sever-side translated text}}`
+`{"json": "${raw JSON text format}", "translatedText": "${sever-side translated text}"}`
 to clients. ([Raw JSON text format](https://minecraft.wiki/w/Raw_JSON_text_format))
 
-Send `{"type": "literal", "text": ${your message}}`
+Send `{"type": "literal", "text": "${your message}"}`
 to broadcast a literal message in the game.
 
-Send `{"type": "json", "json": ${raw JSON text format}}`
+Send `{"type": "json", "json": "${raw JSON text format}"}`
 to broadcast a rich message in the game.
 
 ### Preparing
