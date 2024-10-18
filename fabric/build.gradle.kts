@@ -27,15 +27,15 @@ dependencies {
     modImplementation("net.fabricmc.fabric-api:fabric-api:${Versions.fabricApi}")
 }
 
-val shadowCommon by configurations.creating
+val shadowModMain by configurations.creating
 
 dependencies {
-    implementation(project(path = ":common", configuration = "shadedElements"))
-    shadowCommon(project(path = ":common", configuration = "shadedElements"))
+    implementation(project(path = ":modMain", configuration = "shadedElements"))
+    shadowModMain(project(path = ":modMain", configuration = "shadedElements"))
 }
 
 val shadowJar = tasks.named<ShadowJar>("shadowJar") {
-    configurations = listOf(shadowCommon)
+    configurations = listOf(shadowModMain)
     archiveClassifier = "dev"
 }
 

@@ -1,5 +1,4 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
-import org.jetbrains.kotlin.gradle.utils.extendsFrom
 import realcomm.ModConstant
 import realcomm.Versions
 
@@ -41,16 +40,16 @@ dependencies {
         }
     }
     additionalRuntimeClasspath(libs.kotlin.stdlib)
-    implementation(project(path = ":common", configuration = "shadedElements"))
+    implementation(project(path = ":modMain", configuration = "shadedElements"))
 }
 
-val common by configurations.registering
+val shadowModMain by configurations.registering
 dependencies {
-    common(project(path = ":common", configuration = "shadedElements"))
+    shadowModMain(project(path = ":modMain", configuration = "shadedElements"))
 }
 
 val shadowJar = tasks.named<ShadowJar>("shadowJar") {
-    configurations = listOf(common.get())
+    configurations = listOf(shadowModMain.get())
     archiveClassifier = "no-jar-jar"
 }
 tasks.jar {

@@ -3,9 +3,9 @@ loaderVersion = "[4,)"
 license = "MIT"
 
 [[mods]]
-modId = "${mod_id}_common"
+modId = "${mod_id}_main"
 version = "${version}"
-displayName = "Reality Communication common"
+displayName = "Reality Communication main"
 authors = "idkana"
 description = ""
 displayTest = "IGNORE_SERVER_VERSION"
