@@ -1,9 +1,9 @@
-package realcomm
+package reallink
 
 object ModConstant {
     val version = "0.1.0"
-    val group = "com.idkidknow.mcrealcomm"
-    val id = "realcomm"
+    val group = "com.idkidknow.mcreallink"
+    val id = "reallink"
 }
 
 // Minecraft or loader related versions

@@ -1,4 +1,4 @@
-package com.idkidknow.mcrealcomm.api
+package com.idkidknow.mcreallink.api
 
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex

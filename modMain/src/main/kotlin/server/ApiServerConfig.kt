@@ -1,6 +1,6 @@
-package com.idkidknow.mcrealcomm.server
+package com.idkidknow.mcreallink.server
 
-import com.idkidknow.mcrealcomm.l10n.ServerLanguage
+import com.idkidknow.mcreallink.l10n.ServerLanguage
 import java.io.File
 
 data class ApiServerConfig(

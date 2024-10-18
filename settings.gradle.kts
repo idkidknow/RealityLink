@@ -1,4 +1,4 @@
-rootProject.name = "RealityCommunication"
+rootProject.name = "RealityLink"
 
 pluginManagement {
     repositories {

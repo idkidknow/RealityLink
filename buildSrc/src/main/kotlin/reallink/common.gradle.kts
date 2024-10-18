@@ -1,4 +1,4 @@
-package realcomm
+package reallink
 
 plugins {
     id("java")

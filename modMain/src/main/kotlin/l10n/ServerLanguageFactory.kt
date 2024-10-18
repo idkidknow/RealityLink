@@ -1,6 +1,7 @@
-package com.idkidknow.mcrealcomm.l10n
+package com.idkidknow.mcreallink.l10n
 
 import com.google.gson.JsonParseException
+import com.idkidknow.mcreallink.l10n.ServerLanguage
 import io.github.oshai.kotlinlogging.KotlinLogging
 import net.minecraft.locale.Language
 import net.minecraft.server.MinecraftServer

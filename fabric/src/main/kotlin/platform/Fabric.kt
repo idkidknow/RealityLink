@@ -1,16 +1,15 @@
-package com.idkidknow.mcrealcomm.fabric.platform
+package com.idkidknow.mcreallink.fabric.platform
 
-import com.idkidknow.mcrealcomm.api.CallbackSet
-import com.idkidknow.mcrealcomm.api.UnitCallbackSet
-import com.idkidknow.mcrealcomm.api.invoke
-import com.idkidknow.mcrealcomm.mixin.complement.BroadcastingMessage
-import com.idkidknow.mcrealcomm.mixin.complement.ServerTranslate
-import com.idkidknow.mcrealcomm.platform.BroadcastingMessageEvent
-import com.idkidknow.mcrealcomm.platform.Platform
-import com.idkidknow.mcrealcomm.platform.RegisterCommandsEvent
-import com.idkidknow.mcrealcomm.platform.PlatformEvents
-import com.idkidknow.mcrealcomm.platform.ServerStartingEvent
-import com.idkidknow.mcrealcomm.platform.ServerStoppingEvent
+import com.idkidknow.mcreallink.api.UnitCallbackSet
+import com.idkidknow.mcreallink.api.invoke
+import com.idkidknow.mcreallink.mixin.complement.BroadcastingMessage
+import com.idkidknow.mcreallink.mixin.complement.ServerTranslate
+import com.idkidknow.mcreallink.platform.BroadcastingMessageEvent
+import com.idkidknow.mcreallink.platform.Platform
+import com.idkidknow.mcreallink.platform.RegisterCommandsEvent
+import com.idkidknow.mcreallink.platform.PlatformEvents
+import com.idkidknow.mcreallink.platform.ServerStartingEvent
+import com.idkidknow.mcreallink.platform.ServerStoppingEvent
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
 import net.fabricmc.loader.api.FabricLoader

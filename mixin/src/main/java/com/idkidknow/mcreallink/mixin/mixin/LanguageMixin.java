@@ -1,6 +1,6 @@
-package com.idkidknow.mcrealcomm.mixin.mixin;
+package com.idkidknow.mcreallink.mixin.mixin;
 
-import com.idkidknow.mcrealcomm.mixin.complement.ServerTranslate;
+import com.idkidknow.mcreallink.mixin.complement.ServerTranslate;
 import net.minecraft.locale.Language;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;

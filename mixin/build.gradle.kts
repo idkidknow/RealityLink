@@ -1,6 +1,6 @@
 plugins {
-    id("realcomm.common")
-    id("realcomm.vanilla")
+    id("reallink.common")
+    id("reallink.vanilla")
 }
 
 dependencies {

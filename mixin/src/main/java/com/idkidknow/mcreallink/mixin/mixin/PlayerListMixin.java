@@ -1,6 +1,6 @@
-package com.idkidknow.mcrealcomm.mixin.mixin;
+package com.idkidknow.mcreallink.mixin.mixin;
 
-import com.idkidknow.mcrealcomm.mixin.complement.BroadcastingMessage;
+import com.idkidknow.mcreallink.mixin.complement.BroadcastingMessage;
 import net.minecraft.network.chat.ChatType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.PlayerChatMessage;

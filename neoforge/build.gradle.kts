@@ -1,10 +1,10 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
-import realcomm.ModConstant
-import realcomm.Versions
+import reallink.ModConstant
+import reallink.Versions
 
 plugins {
-    id("realcomm.common")
-    id("realcomm.platform")
+    id("reallink.common")
+    id("reallink.platform")
     id("net.neoforged.moddev")
 }
 

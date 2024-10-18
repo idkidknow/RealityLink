@@ -1,9 +1,9 @@
-package com.idkidknow.mcrealcomm
+package com.idkidknow.mcreallink
 
 import com.akuleshov7.ktoml.Toml
-import com.idkidknow.mcrealcomm.server.ApiServerConfig
-import com.idkidknow.mcrealcomm.server.TlsConfig
-import com.idkidknow.mcrealcomm.l10n.ServerLanguageFactory
+import com.idkidknow.mcreallink.server.ApiServerConfig
+import com.idkidknow.mcreallink.server.TlsConfig
+import com.idkidknow.mcreallink.l10n.ServerLanguageFactory
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.serializer

@@ -1,8 +1,8 @@
-package com.idkidknow.mcrealcomm.server
+package com.idkidknow.mcreallink.server
 
-import com.idkidknow.mcrealcomm.api.UnitCallbackRegistry
-import com.idkidknow.mcrealcomm.api.register
-import com.idkidknow.mcrealcomm.context.ModContext
+import com.idkidknow.mcreallink.api.UnitCallbackRegistry
+import com.idkidknow.mcreallink.api.register
+import com.idkidknow.mcreallink.context.ModContext
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.serialization.WebsocketContentConverter
 import io.ktor.serialization.kotlinx.KotlinxWebsocketSerializationConverter

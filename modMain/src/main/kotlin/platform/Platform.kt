@@ -1,4 +1,4 @@
-package com.idkidknow.mcrealcomm.platform
+package com.idkidknow.mcreallink.platform
 
 import com.mojang.brigadier.CommandDispatcher
 import net.minecraft.commands.CommandSourceStack

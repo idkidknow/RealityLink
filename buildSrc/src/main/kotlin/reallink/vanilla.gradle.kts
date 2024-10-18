@@ -1,6 +1,4 @@
-package realcomm
-
-import realcomm.Versions
+package reallink
 
 plugins {
     id("net.neoforged.moddev")

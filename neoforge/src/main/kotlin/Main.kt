@@ -1,7 +1,7 @@
-package com.idkidknow.mcrealcomm.neoforge
+package com.idkidknow.mcreallink.neoforge
 
-import com.idkidknow.mcrealcomm.neoforge.platform.NeoForge
-import com.idkidknow.mcrealcomm.platformEntry
+import com.idkidknow.mcreallink.neoforge.platform.NeoForge
+import com.idkidknow.mcreallink.platformEntry
 
 fun neoforgeModInit() {
     platformEntry(NeoForge)

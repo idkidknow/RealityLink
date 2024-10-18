@@ -1,6 +1,6 @@
-package com.idkidknow.mcrealcomm.context
+package com.idkidknow.mcreallink.context
 
-import com.idkidknow.mcrealcomm.platform.PlatformApi
+import com.idkidknow.mcreallink.platform.PlatformApi
 import net.minecraft.server.MinecraftServer
 
 interface ModContext : PlatformApi {

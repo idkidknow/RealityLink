@@ -1,8 +1,8 @@
-package com.idkidknow.mcrealcomm.mixin.complement
+package com.idkidknow.mcreallink.mixin.complement
 
 import net.minecraft.network.chat.Component
 
-/** @see com.idkidknow.mcrealcomm.mixin.mixin.PlayerListMixin */
+/** @see com.idkidknow.mcreallink.mixin.mixin.PlayerListMixin */
 object BroadcastingMessage {
     private val _ignoreMessage = ThreadLocal.withInitial { false }
     val ignoreMessage: Boolean get() = _ignoreMessage.get()

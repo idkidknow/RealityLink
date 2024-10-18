@@ -1,8 +1,8 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 
 plugins {
-    id("realcomm.common")
-    id("realcomm.vanilla")
+    id("reallink.common")
+    id("reallink.vanilla")
     id("com.gradleup.shadow")
     alias(libs.plugins.kotlin.serialization)
 }
@@ -55,7 +55,7 @@ val shadowJar = tasks.named<ShadowJar>("shadowJar") {
     configurations = listOf(shade)
     archiveClassifier = "dev"
     isEnableRelocation = true
-    relocationPrefix = "com.idkidknow.mcrealcomm.shaded"
+    relocationPrefix = "com.idkidknow.mcreallink.shaded"
     mergeServiceFiles()
     minimize()
 }

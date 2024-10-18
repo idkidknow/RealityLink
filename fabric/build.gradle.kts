@@ -2,12 +2,12 @@
 
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import net.fabricmc.loom.task.RemapJarTask
-import realcomm.ModConstant
-import realcomm.Versions
+import reallink.ModConstant
+import reallink.Versions
 
 plugins {
-    id("realcomm.common")
-    id("realcomm.platform")
+    id("reallink.common")
+    id("reallink.platform")
     alias(libs.plugins.fabric.loom)
 }
 

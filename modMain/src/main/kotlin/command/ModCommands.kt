@@ -1,8 +1,8 @@
-package com.idkidknow.mcrealcomm.command
+package com.idkidknow.mcreallink.command
 
-import com.idkidknow.mcrealcomm.MOD_ID
-import com.idkidknow.mcrealcomm.ModMain
-import com.idkidknow.mcrealcomm.l10n.LanguageLoadingException
+import com.idkidknow.mcreallink.MOD_ID
+import com.idkidknow.mcreallink.ModMain
+import com.idkidknow.mcreallink.l10n.LanguageLoadingException
 import io.github.oshai.kotlinlogging.KotlinLogging
 import net.minecraft.commands.Commands
 import net.minecraft.network.chat.Component

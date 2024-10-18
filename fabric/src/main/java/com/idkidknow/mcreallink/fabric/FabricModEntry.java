@@ -1,8 +1,8 @@
-package com.idkidknow.mcrealcomm.fabric;
+package com.idkidknow.mcreallink.fabric;
 
 import net.fabricmc.api.ModInitializer;
 
-public class RealityCommunicationModEntryFabric implements ModInitializer {
+public class FabricModEntry implements ModInitializer {
     @Override
     public void onInitialize() {
         MainKt.fabricModInit();

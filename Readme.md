@@ -1,4 +1,4 @@
-# Reality Communication
+# RealityLink
 
 A neat Minecraft in-game chat interacting API with server-side l10n support, suitable for chatbots.
 
@@ -35,7 +35,7 @@ things that the previous paragraph tells you to do.
 
 ### Configuration
 
-create a toml file `config/realcomm/server.toml`:
+create a toml file `config/reallink/server.toml`:
 ```toml
 port = 39244
 localeCode = "en_us"
@@ -60,7 +60,7 @@ privateKey = "server_pkcs8.key"
 # root = "client_cert.pem" # optional
 ```
 
-Absolute path, or relative to `config/realcomm/`
+Absolute path, or relative to `config/reallink/`
 - `certChain`: The server's certificate chain
 - `privateKey`: The private key in PKCS #8 format
 - optional `root`: Trusted root certificates, used to verify
@@ -70,7 +70,7 @@ Use normal TLS if not provided, otherwise enable mutual TLS.
 ### Launch
 
 Start the Minecraft server, and then
-use the command `/realcomm start` to launch the API server.
+use the command `/reallink start` to launch the API server.
 
 The server will be launched automatically if `autoStart = true` in
 `server.toml`.

@@ -1,7 +1,7 @@
-package com.idkidknow.mcrealcomm.fabric
+package com.idkidknow.mcreallink.fabric
 
-import com.idkidknow.mcrealcomm.fabric.platform.Fabric
-import com.idkidknow.mcrealcomm.platformEntry
+import com.idkidknow.mcreallink.fabric.platform.Fabric
+import com.idkidknow.mcreallink.platformEntry
 
 fun fabricModInit() {
     platformEntry(Fabric)

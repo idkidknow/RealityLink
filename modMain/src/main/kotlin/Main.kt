@@ -1,24 +1,24 @@
-package com.idkidknow.mcrealcomm
+package com.idkidknow.mcreallink
 
-import com.idkidknow.mcrealcomm.api.RegisteredCallback
-import com.idkidknow.mcrealcomm.api.UnitCallbackSet
-import com.idkidknow.mcrealcomm.api.invoke
-import com.idkidknow.mcrealcomm.api.register
-import com.idkidknow.mcrealcomm.server.ApiServer
-import com.idkidknow.mcrealcomm.server.ApiServerConfig
-import com.idkidknow.mcrealcomm.server.createApiServer
-import com.idkidknow.mcrealcomm.command.modCommandBuilder
-import com.idkidknow.mcrealcomm.context.CallingStartCommandEvent
-import com.idkidknow.mcrealcomm.context.CallingStopCommandEvent
-import com.idkidknow.mcrealcomm.context.ModContext
-import com.idkidknow.mcrealcomm.context.ModEvents
-import com.idkidknow.mcrealcomm.context.ModEventsInvoker
-import com.idkidknow.mcrealcomm.platform.invoke
-import com.idkidknow.mcrealcomm.l10n.LanguageLoadingException
-import com.idkidknow.mcrealcomm.platform.Platform
-import com.idkidknow.mcrealcomm.platform.PlatformApi
-import com.idkidknow.mcrealcomm.platform.ServerStartingEvent
-import com.idkidknow.mcrealcomm.platform.ServerStoppingEvent
+import com.idkidknow.mcreallink.api.RegisteredCallback
+import com.idkidknow.mcreallink.api.UnitCallbackSet
+import com.idkidknow.mcreallink.api.invoke
+import com.idkidknow.mcreallink.api.register
+import com.idkidknow.mcreallink.server.ApiServer
+import com.idkidknow.mcreallink.server.ApiServerConfig
+import com.idkidknow.mcreallink.server.createApiServer
+import com.idkidknow.mcreallink.command.modCommandBuilder
+import com.idkidknow.mcreallink.context.CallingStartCommandEvent
+import com.idkidknow.mcreallink.context.CallingStopCommandEvent
+import com.idkidknow.mcreallink.context.ModContext
+import com.idkidknow.mcreallink.context.ModEvents
+import com.idkidknow.mcreallink.context.ModEventsInvoker
+import com.idkidknow.mcreallink.platform.invoke
+import com.idkidknow.mcreallink.l10n.LanguageLoadingException
+import com.idkidknow.mcreallink.platform.Platform
+import com.idkidknow.mcreallink.platform.PlatformApi
+import com.idkidknow.mcreallink.platform.ServerStartingEvent
+import com.idkidknow.mcreallink.platform.ServerStoppingEvent
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.util.collections.ConcurrentSet
 import net.minecraft.server.MinecraftServer
@@ -26,7 +26,7 @@ import kotlin.concurrent.thread
 
 private val logger = KotlinLogging.logger {}
 
-const val MOD_ID = "realcomm"
+const val MOD_ID = "reallink"
 
 fun platformEntry(platform: Platform) {
     val modEvents = prepareModEvents(platform)
@@ -55,7 +55,7 @@ fun prepareModEvents(platform: Platform): ModEvents {
 
 /** Initialize the mod and bind its lifetime to the Minecraft server */
 fun modInit(platform: Platform, modEvents: ModEvents) {
-    logger.info { "Reality Communication mod initializing" }
+    logger.info { "RealityLink mod initializing" }
 
     val serverStarting = UnitCallbackSet<ServerStartingEvent>()
     val serverStopping = UnitCallbackSet<ServerStoppingEvent>()

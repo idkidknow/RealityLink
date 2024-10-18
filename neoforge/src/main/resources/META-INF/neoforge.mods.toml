@@ -5,7 +5,7 @@ license = "MIT"
 [[mods]]
 modId = "${mod_id}"
 version = "${version}"
-displayName = "Reality Communication"
+displayName = "RealityLink"
 authors = "idkana"
 description = '''
 A neat in-game chat interacting API with server-side l10n support, suitable for chatbots.

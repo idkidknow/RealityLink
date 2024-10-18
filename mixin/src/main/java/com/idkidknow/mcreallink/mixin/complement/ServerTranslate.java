@@ -1,11 +1,12 @@
-package com.idkidknow.mcrealcomm.mixin.complement;
+package com.idkidknow.mcreallink.mixin.complement;
 
+import com.idkidknow.mcreallink.mixin.mixin.LanguageMixin;
 import net.minecraft.locale.Language;
 import net.minecraft.network.chat.FormattedText;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-/** @see com.idkidknow.mcrealcomm.mixin.mixin.LanguageMixin */
+/** @see LanguageMixin */
 public class ServerTranslate {
     private static final ThreadLocal<Language> injectingLanguage = new ThreadLocal<>();
 
