@@ -5,7 +5,7 @@ A neat Minecraft in-game chat interacting API with server-side l10n support, sui
 ## Usage
 
 This mod runs on a Minecraft server and
-establishes a WebSocket server.
+establishes a WebSocket server at `ws(s)://host:port/minecraft-chat`.
 The server sends in-game chat messages as text frame
 `{"json": "${raw JSON text format}", "translatedText": "${sever-side translated text}"}`
 to clients. ([Raw JSON text format](https://minecraft.wiki/w/Raw_JSON_text_format))
