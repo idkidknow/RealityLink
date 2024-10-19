@@ -1,6 +1,7 @@
 package com.idkidknow.mcreallink
 
 import com.akuleshov7.ktoml.Toml
+import com.idkidknow.mcreallink.context.ModContext
 import com.idkidknow.mcreallink.server.ApiServerConfig
 import com.idkidknow.mcreallink.server.TlsConfig
 import com.idkidknow.mcreallink.l10n.ServerLanguageFactory
@@ -14,12 +15,7 @@ import java.nio.file.Path
 private val logger = KotlinLogging.logger {}
 
 data class ReadApiServerConfig(val config: ApiServerConfig, val autoStart: Boolean)
-/** require [server] to get necessary information to start api server */
-fun readApiServerConfig(
-    configDir: Path,
-    gameDir: Path,
-    server: MinecraftServer,
-): Result<ReadApiServerConfig> {
+fun ModContext.readApiServerConfig(): Result<ReadApiServerConfig> {
     @Serializable
     data class ServerToml(
         val port: Int = 39244,
@@ -31,11 +27,12 @@ fun readApiServerConfig(
         val root: String? = null,
     )
 
-    val path = configDir.resolve(MOD_ID).resolve("server.toml")
-    val config = if (!Files.exists(path)) ServerToml() else Toml.decodeFromString(serializer(), Files.readString(path))
+    val path = gameConfigDir.resolve(MOD_ID).resolve("server.toml")
+    val config = if (!Files.exists(path)) ServerToml() else
+        Toml.decodeFromString(serializer(), com.google.common.io.Files.asCharSource(path.toFile(), com.google.common.base.Charsets.UTF_8).read())
 
-    val resPackDir = gameDir.resolve(config.resourcePackDir)
-    val fallbackLanguage = ServerLanguageFactory.fromJavaResource(server, config.localeCode)
+    val resPackDir = gameRootDir.resolve(config.resourcePackDir)
+    val fallbackLanguage = with (ServerLanguageFactory) { fromJavaResource(config.localeCode) }
     val resPackLanguage = ServerLanguageFactory.fromResourcePackDir(resPackDir, config.localeCode).getOrElse {
         logger.error(it) {}
         return Result.failure(it)
@@ -48,14 +45,14 @@ fun readApiServerConfig(
         throw IllegalArgumentException("missing private key")
     } else if (config.root == null) {
         TlsConfig.Tls(
-            configDir.resolve(MOD_ID).resolve(config.certChain).toFile(),
-            configDir.resolve(MOD_ID).resolve(config.privateKey).toFile(),
+            gameConfigDir.resolve(MOD_ID).resolve(config.certChain).toFile(),
+            gameConfigDir.resolve(MOD_ID).resolve(config.privateKey).toFile(),
         )
     } else {
         TlsConfig.MutualTls(
-            configDir.resolve(MOD_ID).resolve(config.certChain).toFile(),
-            configDir.resolve(MOD_ID).resolve(config.privateKey).toFile(),
-            configDir.resolve(MOD_ID).resolve(config.root).toFile(),
+            gameConfigDir.resolve(MOD_ID).resolve(config.certChain).toFile(),
+            gameConfigDir.resolve(MOD_ID).resolve(config.privateKey).toFile(),
+            gameConfigDir.resolve(MOD_ID).resolve(config.root).toFile(),
         )
     }
 

@@ -1,5 +1,5 @@
 modLoader = "javafml"
-loaderVersion = "[4,)"
+loaderVersion = "[36,)"
 license = "MIT"
 
 [[mods]]
@@ -13,18 +13,15 @@ A neat in-game chat interacting API with server-side l10n support, suitable for 
 displayTest = "IGNORE_SERVER_VERSION"
 
 [[dependencies.${mod_id}]]
-modId = "neoforge"
-type = "required"
-versionRange = "[21.0,)"
+modId = "forge"
+mandatory = true
+versionRange = "[36,)"
 ordering = "NONE"
 side = "BOTH"
 
 [[dependencies.${mod_id}]]
 modId = "minecraft"
-type = "required"
-versionRange = "[1.21,)"
+mandatory = true
+versionRange = "[1.16.5,)"
 ordering = "NONE"
 side = "BOTH"
-
-[[mixins]]
-config = "${mod_id}.mixins.json"

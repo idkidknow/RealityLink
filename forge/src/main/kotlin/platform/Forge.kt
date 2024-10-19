@@ -1,9 +1,11 @@
-package com.idkidknow.mcreallink.neoforge.platform
+package com.idkidknow.mcreallink.forge.platform
 
 import com.idkidknow.mcreallink.api.UnitCallbackSet
 import com.idkidknow.mcreallink.api.invoke
 import com.idkidknow.mcreallink.mixin.complement.BroadcastingMessage
 import com.idkidknow.mcreallink.mixin.complement.ServerTranslate
+import com.idkidknow.mcreallink.mixin.mixin.MinecraftServerAccessor
+import com.idkidknow.mcreallink.mixin.mixin.SimpleReloadableResourceManagerAccessor
 import com.idkidknow.mcreallink.platform.BroadcastingMessageEvent
 import com.idkidknow.mcreallink.platform.Platform
 import com.idkidknow.mcreallink.platform.PlatformEvents
@@ -11,15 +13,19 @@ import com.idkidknow.mcreallink.platform.RegisterCommandsEvent
 import com.idkidknow.mcreallink.platform.ServerStartingEvent
 import com.idkidknow.mcreallink.platform.ServerStoppingEvent
 import net.minecraft.locale.Language
+import net.minecraft.network.chat.ChatType
 import net.minecraft.network.chat.Component
 import net.minecraft.network.chat.FormattedText
+import net.minecraft.server.MinecraftServer
 import net.minecraft.server.players.PlayerList
-import net.neoforged.fml.loading.FMLPaths
-import net.neoforged.neoforge.common.NeoForge
+import net.minecraftforge.common.MinecraftForge
+import net.minecraftforge.fml.event.server.FMLServerStartingEvent
+import net.minecraftforge.fml.event.server.FMLServerStoppingEvent
+import net.minecraftforge.fml.loading.FMLPaths
 import java.nio.file.Path
 
-object NeoForge: Platform {
-    override val events: PlatformEvents = NeoForgeEvents
+object Forge: Platform {
+    override val events: PlatformEvents = ForgeEvents
     override val gameRootDir: Path get () = FMLPaths.GAMEDIR.get()
     override val gameConfigDir: Path get() = FMLPaths.CONFIGDIR.get()
 
@@ -27,26 +33,29 @@ object NeoForge: Platform {
 
     override fun broadcastMessageWithoutCallback(playerList: PlayerList, message: Component) {
         BroadcastingMessage.ignoreTemporarily {
-            playerList.broadcastSystemMessage(message, false)
+            playerList.broadcastMessage(message, ChatType.SYSTEM, net.minecraft.Util.NIL_UUID)
         }
     }
+
+    override fun getNamespaces(server: MinecraftServer): Iterable<String> =
+        ((server as MinecraftServerAccessor).resources.resourceManager as SimpleReloadableResourceManagerAccessor).namespaces
 }
 
-object NeoForgeEvents : PlatformEvents {
+object ForgeEvents : PlatformEvents {
     override fun serverStartingCallback(callback: (ServerStartingEvent) -> Unit) {
-        NeoForge.EVENT_BUS.addListener<net.neoforged.neoforge.event.server.ServerStartingEvent> { event ->
+        MinecraftForge.EVENT_BUS.addListener<FMLServerStartingEvent> { event ->
             callback(ServerStartingEvent(event.server))
         }
     }
 
     override fun serverStoppingCallback(callback: (ServerStoppingEvent) -> Unit) {
-        NeoForge.EVENT_BUS.addListener<net.neoforged.neoforge.event.server.ServerStoppingEvent> { event ->
+        MinecraftForge.EVENT_BUS.addListener<FMLServerStoppingEvent> { event ->
             callback(ServerStoppingEvent(event.server))
         }
     }
 
     override fun registerCommandsCallback(callback: (RegisterCommandsEvent) -> Unit) {
-        NeoForge.EVENT_BUS.addListener<net.neoforged.neoforge.event.RegisterCommandsEvent> { event ->
+        MinecraftForge.EVENT_BUS.addListener<net.minecraftforge.event.RegisterCommandsEvent> { event ->
             callback(RegisterCommandsEvent(event.dispatcher))
         }
     }

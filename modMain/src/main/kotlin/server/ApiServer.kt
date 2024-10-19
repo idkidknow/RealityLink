@@ -38,6 +38,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import net.minecraft.locale.Language
 import net.minecraft.network.chat.Component
+import net.minecraft.network.chat.TextComponent
 import net.minecraft.server.MinecraftServer
 import kotlin.concurrent.thread
 import kotlin.time.Duration.Companion.seconds
@@ -174,7 +175,7 @@ fun CoroutineScope.createApiServer(
 }
 
 private fun Component.toChatResponse(ctx: ModContext, language: Language): ChatResponse {
-    val json = Component.Serializer.toJson(this, ctx.minecraftServer.registryAccess())
+    val json = Component.Serializer.toJson(this)
     val translatedText = ctx.translate(this, language)
     return ChatResponse(json, translatedText)
 }
@@ -182,12 +183,12 @@ private fun Component.toChatResponse(ctx: ModContext, language: Language): ChatR
 private suspend fun Frame.toComponent(minecraftServer: MinecraftServer, converter: WebsocketContentConverter): Component {
     val request = converter.deserialize<ChatRequest>(this@toComponent)
     return when (request) {
-        is ChatRequest.Literal -> Component.literal(request.text)
+        is ChatRequest.Literal -> TextComponent(request.text)
         is ChatRequest.Json -> try {
-            Component.Serializer.fromJson(request.json, minecraftServer.registryAccess())!!
+            Component.Serializer.fromJson(request.json)!!
         } catch (_: Exception) {
             // Send the raw json text
-            Component.literal(request.json)
+            TextComponent(request.json)
         }
     }
 }

@@ -1,6 +1,7 @@
 package com.idkidknow.mcreallink.l10n
 
 import com.google.gson.JsonParseException
+import com.idkidknow.mcreallink.context.ModContext
 import com.idkidknow.mcreallink.l10n.ServerLanguage
 import io.github.oshai.kotlinlogging.KotlinLogging
 import net.minecraft.locale.Language
@@ -43,8 +44,8 @@ object ServerLanguageFactory {
         }
     }
 
-    fun fromJavaResource(server: MinecraftServer, localeCode: String): ServerLanguage =
-        fromJavaResource(server.resourceManager.namespaces, localeCode)
+    fun ModContext.fromJavaResource(localeCode: String): ServerLanguage =
+        fromJavaResource(getNamespaces(minecraftServer), localeCode)
 
     private fun loadFromResourcePack(
         input: InputStream,
@@ -98,9 +99,13 @@ object ServerLanguageFactory {
         }
         try {
             val paths = Files.list(path).use {
-                it.filter { filepath ->
-                    !filepath.isDirectory() && filepath.toFile().extension == "zip"
-                }.toList()
+                val filtered = mutableListOf<Path>()
+                for (path in it) {
+                    if (!path.isDirectory() && path.toFile().extension == "zip") {
+                        filtered.add(path)
+                    }
+                }
+                filtered
             }
             return fromResourcePack(paths, localeCode)
         } catch (e: IOException) {

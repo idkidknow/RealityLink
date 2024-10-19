@@ -93,7 +93,7 @@ class ModMain(val ctx: ModContext) : ModContext by ctx {
         modEvents.callingStartCommand.register { readConfigAndStartApiServer() }.let { registeredCallbacks.add(it) }
         modEvents.callingStopCommand.register { stopApiServer() }.let { registeredCallbacks.add(it) }
 
-        readApiServerConfig(gameConfigDir, gameRootDir, minecraftServer).getOrNull()?.let {
+        readApiServerConfig().getOrNull()?.let {
             val (apiServerConfig, autoStart) = it
             if (autoStart) {
                 logger.info { "autoStart = true" }
@@ -107,7 +107,7 @@ class ModMain(val ctx: ModContext) : ModContext by ctx {
         data class LanguageLoading(val e: LanguageLoadingException): StartApiServerException("Failed to load language", e)
     }
     private fun readConfigAndStartApiServer(): StartApiServerException? {
-        val (apiServerConfig, _) = readApiServerConfig(gameConfigDir, gameRootDir, minecraftServer).getOrElse { e ->
+        val (apiServerConfig, _) = readApiServerConfig().getOrElse { e ->
             if (e is LanguageLoadingException) return StartApiServerException.LanguageLoading(e) else throw e
         }
         if (!startApiServer(apiServerConfig)) {

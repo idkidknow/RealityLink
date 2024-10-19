@@ -2,6 +2,15 @@
 
 A neat Minecraft in-game chat interacting API with server-side l10n support, suitable for chatbots.
 
+## 1.16.5 defect
+
+Minecraft 1.16.5 uses Log4j 2.8.1 but there's no such thing as
+a bridge between newest SLF4J and Log4j 2.8.1 (log4j-slf4j2-impl:2.8.1)
+so we use slf4j-simple as a workaround.
+
+defect: All logs are sent to stderr and shown with a verbose prefix in Minecraft's log.
+Logging level defaults to INFO and is not easy to change.
+
 ## Usage
 
 This mod runs on a Minecraft server and

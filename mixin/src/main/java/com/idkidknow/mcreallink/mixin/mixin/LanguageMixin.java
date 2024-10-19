@@ -11,7 +11,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public abstract class LanguageMixin {
     @Inject(method = "getInstance", at = @At("HEAD"), cancellable = true)
     private static void replaceLanguageInstance(CallbackInfoReturnable<Language> cir) {
-        var language = ServerTranslate.getInjectingLanguage();
+        Language language = ServerTranslate.getInjectingLanguage();
         if (language != null) {
             cir.setReturnValue(language);
         }

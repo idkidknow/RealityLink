@@ -22,9 +22,8 @@ ktor-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx
 # plugins as libraries, used in convetion plugins
 shadow-plugin = { module = "com.gradleup.shadow:shadow-gradle-plugin", version = "8.3.2" }
 kotlin-plugin = { module = "org.jetbrains.kotlin.jvm:org.jetbrains.kotlin.jvm.gradle.plugin", version.ref = "kotlin" }
-moddev-plugin = { module = "net.neoforged:moddev-gradle", version.ref = "moddev" }
+vanillagradle-plugin = { module = "org.spongepowered:vanillagradle", version = "0.2.1-SNAPSHOT" }
 
 [plugins]
-fabric-loom = { id = "fabric-loom", version = "1.8-SNAPSHOT" }
-moddev = { id = "net.neoforged.moddev", version.ref = "moddev" }
+architectury-loom = { id = "dev.architectury.loom", version = "1.7-SNAPSHOT" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }

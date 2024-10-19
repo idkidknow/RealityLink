@@ -18,6 +18,7 @@ interface PlatformApi {
     val gameConfigDir: Path
     fun translate(text: FormattedText, language: Language): String
     fun broadcastMessageWithoutCallback(playerList: PlayerList, message: Component)
+    fun getNamespaces(server: MinecraftServer): Iterable<String>
 }
 
 data class ServerStartingEvent(val server: MinecraftServer)

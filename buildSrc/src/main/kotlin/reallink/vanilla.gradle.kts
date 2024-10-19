@@ -1,13 +1,14 @@
 package reallink
 
 plugins {
-    id("net.neoforged.moddev")
+    id("java")
+    id("org.spongepowered.gradle.vanilla")
 }
 
-neoForge {
-    neoFormVersion = Versions.neoForm
-    parchment {
-        minecraftVersion = Versions.minecraft
-        mappingsVersion = Versions.parchment
-    }
+repositories {
+    maven("https://repo.spongepowered.org/repository/maven-public/")
+}
+
+minecraft {
+    version(Versions.minecraft)
 }

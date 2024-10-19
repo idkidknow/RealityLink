@@ -16,7 +16,7 @@ public class ServerTranslate {
 
     public static @NotNull String translate(@NotNull FormattedText text, @NotNull Language language) {
         injectingLanguage.set(language);
-        var ret = text.getString();
+        String ret = text.getString();
         injectingLanguage.remove();
         return ret;
     }

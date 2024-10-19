@@ -6,6 +6,7 @@ import com.idkidknow.mcreallink.l10n.LanguageLoadingException
 import io.github.oshai.kotlinlogging.KotlinLogging
 import net.minecraft.commands.Commands
 import net.minecraft.network.chat.Component
+import net.minecraft.network.chat.TextComponent
 
 private val logger = KotlinLogging.logger {}
 
@@ -22,12 +23,12 @@ private fun startCommandBuilder(startAction: () -> Exception?) =
         val ret = startAction()
         when (ret) {
             null -> {
-                context.source.sendSuccess({ Component.literal("Success.") }, false)
+                context.source.sendSuccess(TextComponent("Success."), false)
                 return@executes 1
             }
 
             is ModMain.StartApiServerException.AlreadyStarted -> {
-                context.source.sendFailure(Component.literal("Already started."))
+                context.source.sendFailure(TextComponent("Already started."))
                 return@executes -1
             }
 
@@ -36,11 +37,11 @@ private fun startCommandBuilder(startAction: () -> Exception?) =
                 logger.error(e) { "$e" }
                 when (e) {
                     is LanguageLoadingException.IOException -> {
-                        context.source.sendFailure(Component.literal("Read language file failed: ${e.message}"))
+                        context.source.sendFailure(TextComponent("Read language file failed: ${e.message}"))
                         return@executes -2
                     }
                     is LanguageLoadingException.ParseException -> {
-                        context.source.sendFailure(Component.literal("Parse language file failed: ${e.message}."))
+                        context.source.sendFailure(TextComponent("Parse language file failed: ${e.message}."))
                         return@executes -3
                     }
                 }
@@ -55,6 +56,6 @@ private fun startCommandBuilder(startAction: () -> Exception?) =
 private fun stopCommandBuilder(stopAction: () -> Unit) =
     Commands.literal("stop").executes { context ->
         stopAction()
-        context.source.sendSuccess({ Component.literal("Success.") }, false)
+        context.source.sendSuccess(TextComponent("Success."), false)
         return@executes 1
     }

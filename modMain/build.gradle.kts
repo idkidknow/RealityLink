@@ -1,4 +1,5 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+import reallink.Versions
 
 plugins {
     id("reallink.common")
@@ -18,22 +19,6 @@ configurations.register("shadedElements") {
 }
 
 shade.exclude(group = "org.jetbrains.kotlin")
-shade.exclude(group = "org.slf4j", module = "slf4j-api")
-
-// NeoForm's dependencies use "strictly" version. To resolve it
-configurations.all {
-    if (this.name in listOf("compileClasspath", "runtimeClasspath")) {
-        resolutionStrategy {
-            afterEvaluate {
-                val minecraftCompileClasspath = configurations["neoFormRuntimeDependenciesCompileClasspath"]
-                for (artifact in minecraftCompileClasspath.resolvedConfiguration.resolvedArtifacts) {
-                    val id = artifact.moduleVersion.id
-                    force("${id.group}:${id.name}:${id.version}")
-                }
-            }
-        }
-    }
-}
 
 dependencies {
     compileOnly(libs.mixin)
@@ -49,6 +34,14 @@ dependencies {
     implementation(libs.ktor.server.netty.also { shade(it) })
     implementation(libs.ktor.network.tls.certificates.also { shade(it) })
     implementation(libs.ktor.serialization.kotlinx.json.also { shade(it) })
+
+    // Minecraft 1.16.5 uses Log4j 2.8.1 but there's no such thing as
+    // a bridge between newest SLF4J and Log4j 2.8.1 (log4j-slf4j2-impl:2.8.1)
+    // so we use slf4j-simple here as a workaround
+    //
+    // defect: All logs are sent to stderr and shown with a verbose prefix in Minecraft's log.
+    // Logging level defaults to INFO and is not easy to change
+    implementation("org.slf4j:slf4j-simple:2.0.16".also { shade(it) })
 }
 
 val shadowJar = tasks.named<ShadowJar>("shadowJar") {

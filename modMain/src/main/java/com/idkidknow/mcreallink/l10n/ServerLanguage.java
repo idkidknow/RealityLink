@@ -11,8 +11,8 @@ public abstract class ServerLanguage extends Language {
     public abstract Optional<@NotNull String> get(@NotNull String key);
 
     @Override
-    public @NotNull String getOrDefault(@NotNull String key, @NotNull String defaultValue) {
-        return get(key).orElse(defaultValue);
+    public @NotNull String getOrDefault(@NotNull String key) {
+        return get(key).orElse(key);
     }
 
     @Override
