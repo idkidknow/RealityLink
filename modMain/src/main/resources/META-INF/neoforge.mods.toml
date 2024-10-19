@@ -10,7 +10,7 @@ authors = "idkana"
 description = ""
 displayTest = "IGNORE_SERVER_VERSION"
 
-[[dependencies.${mod_id}_common]]
+[[dependencies.${mod_id}_main]]
 modId = "minecraft"
 type = "required"
 versionRange = "[1.21,)"
