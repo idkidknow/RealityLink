@@ -1,5 +1,3 @@
-/** Cannot run in dev mode because modMain requires forge mod metadata to be load into the game (what architectury plugin do) */
-
 @file:Suppress("UnstableApiUsage")
 
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
