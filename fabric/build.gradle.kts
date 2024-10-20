@@ -30,8 +30,12 @@ dependencies {
 val shadowModMain by configurations.creating
 
 dependencies {
-    implementation(project(path = ":modMain", configuration = "shadedElements"))
-    shadowModMain(project(path = ":modMain", configuration = "shadedElements"))
+    implementation(project(":modMain")) {
+        attributes { attribute(Bundling.BUNDLING_ATTRIBUTE, objects.named(Bundling.SHADOWED)) }
+    }
+    shadowModMain(project(":modMain")) {
+        attributes { attribute(Bundling.BUNDLING_ATTRIBUTE, objects.named(Bundling.SHADOWED)) }
+    }
 }
 
 val shadowJar = tasks.named<ShadowJar>("shadowJar") {

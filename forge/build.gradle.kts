@@ -6,6 +6,7 @@ import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import net.fabricmc.loom.task.RemapJarTask
 import reallink.ModConstant
 import reallink.Versions
+import reallink.registerGenerateMinimalForgeMetadataAttribute
 
 plugins {
     id("reallink.common")
@@ -35,12 +36,23 @@ dependencies {
 }
 
 val shadowModMain by configurations.creating
+val generateMetadata = registerGenerateMinimalForgeMetadataAttribute("generateMetadata") {
+    modId = "${ModConstant.id}_main"
+    packFormat = 6
+}
 // no jar-in-jar in forge 1.16.5, no kotlin 2 in kotlinforforge (and why it uses meaningless language provider things?)
 val shadowKotlin by configurations.creating
 
 dependencies {
-    implementation(project(path = ":modMain", configuration = "shadedElements"))
-    shadowModMain(project(path = ":modMain", configuration = "shadedElements"))
+    implementation(project(":modMain")) {
+        attributes {
+            attribute(generateMetadata, true)
+            attribute(Bundling.BUNDLING_ATTRIBUTE, objects.named(Bundling.SHADOWED))
+        }
+    }
+    shadowModMain(project(":modMain")) {
+        attributes { attribute(Bundling.BUNDLING_ATTRIBUTE, objects.named(Bundling.SHADOWED)) }
+    }
     shadowKotlin(libs.kotlin.stdlib)
 }
 
