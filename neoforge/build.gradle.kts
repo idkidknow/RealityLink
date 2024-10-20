@@ -1,6 +1,7 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import reallink.ModConstant
 import reallink.Versions
+import reallink.registerGenerateMinimalNeoForgeMetadataAttribute
 
 plugins {
     id("reallink.common")
@@ -40,12 +41,22 @@ dependencies {
         }
     }
     additionalRuntimeClasspath(libs.kotlin.stdlib)
-    implementation(project(path = ":modMain", configuration = "shadedElements"))
 }
 
 val shadowModMain by configurations.registering
+val generateMetadata = registerGenerateMinimalNeoForgeMetadataAttribute("generateMetadata") {
+    modId = "${ModConstant.id}_main"
+}
 dependencies {
-    shadowModMain(project(path = ":modMain", configuration = "shadedElements"))
+    implementation(project(":modMain")) {
+        attributes {
+            attribute(generateMetadata, true)
+            attribute(Bundling.BUNDLING_ATTRIBUTE, objects.named(Bundling.SHADOWED))
+        }
+    }
+    shadowModMain(project(":modMain")) {
+        attributes { attribute(Bundling.BUNDLING_ATTRIBUTE, objects.named(Bundling.SHADOWED)) }
+    }
 }
 
 val shadowJar = tasks.named<ShadowJar>("shadowJar") {

@@ -12,10 +12,9 @@ val shade by configurations.creating {
     isCanBeResolved = true
     isCanBeConsumed = false
 }
-configurations.register("shadedElements") {
-    isCanBeResolved = false
-    isCanBeConsumed = true
-}
+val internal by configurations.creating
+configurations.compileClasspath { extendsFrom(internal) }
+configurations.runtimeClasspath { extendsFrom(internal) }
 
 shade.exclude(group = "org.jetbrains.kotlin")
 shade.exclude(group = "org.slf4j", module = "slf4j-api")
@@ -38,20 +37,27 @@ configurations.all {
 dependencies {
     compileOnly(libs.mixin)
 
-    implementation(libs.kotlin.logging.also { shade(it) })
-    implementation(libs.ktoml.core.also { shade(it) })
-    implementation(libs.kotlinx.coroutines.core.also { shade(it) })
-    implementation(libs.kotlinx.serialization.json.also { shade(it) })
+    libs.kotlin.logging.also { shade(it) }.also { internal(it) }
+    libs.ktoml.core.also { shade(it) }.also { internal(it) }
+    libs.kotlinx.coroutines.core.also { shade(it) }.also { internal(it) }
+    libs.kotlinx.serialization.json.also { shade(it) }.also { internal(it) }
 
     // ktor
-    implementation(libs.ktor.server.core.also { shade(it) })
-    implementation(libs.ktor.server.websockets.also { shade(it) })
-    implementation(libs.ktor.server.netty.also { shade(it) })
-    implementation(libs.ktor.network.tls.certificates.also { shade(it) })
-    implementation(libs.ktor.serialization.kotlinx.json.also { shade(it) })
+    libs.ktor.server.core.also { shade(it) }.also { internal(it) }
+    libs.ktor.server.websockets.also { shade(it) }.also { internal(it) }
+    libs.ktor.server.netty.also { shade(it) }.also { internal(it) }
+    libs.ktor.network.tls.certificates.also { shade(it) }.also { internal(it) }
+    libs.ktor.serialization.kotlinx.json.also { shade(it) }.also { internal(it) }
 }
 
-val shadowJar = tasks.named<ShadowJar>("shadowJar") {
+configurations.register("shadedElements") {
+    isCanBeResolved = false
+    isCanBeConsumed = true
+    attributes {
+        attribute(Bundling.BUNDLING_ATTRIBUTE, objects.named(Bundling.SHADOWED))
+    }
+}
+val shadeTask = tasks.named<ShadowJar>("shadowJar") {
     configurations = listOf(shade)
     archiveClassifier = "dev"
     isEnableRelocation = true
@@ -61,5 +67,5 @@ val shadowJar = tasks.named<ShadowJar>("shadowJar") {
 }
 
 artifacts {
-    add("shadedElements", shadowJar)
+    add("shadedElements", shadeTask)
 }
