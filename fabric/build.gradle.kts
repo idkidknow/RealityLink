@@ -8,7 +8,7 @@ import reallink.Versions
 plugins {
     id("reallink.common")
     id("reallink.platform")
-    alias(libs.plugins.architectury.loom)
+    alias(libs.plugins.fabric.loom)
 }
 
 loom {

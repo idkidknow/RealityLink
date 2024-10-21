@@ -32,7 +32,7 @@ fun ModContext.readApiServerConfig(): Result<ReadApiServerConfig> {
         Toml.decodeFromString(serializer(), com.google.common.io.Files.asCharSource(path.toFile(), com.google.common.base.Charsets.UTF_8).read())
 
     val resPackDir = gameRootDir.resolve(config.resourcePackDir)
-    val fallbackLanguage = with (ServerLanguageFactory) { fromJavaResource(config.localeCode) }
+    val fallbackLanguage = ServerLanguageFactory.fromJavaResource(minecraftServer, config.localeCode)
     val resPackLanguage = ServerLanguageFactory.fromResourcePackDir(resPackDir, config.localeCode).getOrElse {
         logger.error(it) {}
         return Result.failure(it)

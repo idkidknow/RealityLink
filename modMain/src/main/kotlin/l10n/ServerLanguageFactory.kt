@@ -44,8 +44,8 @@ object ServerLanguageFactory {
         }
     }
 
-    fun ModContext.fromJavaResource(localeCode: String): ServerLanguage =
-        fromJavaResource(getNamespaces(minecraftServer), localeCode)
+    fun fromJavaResource(server: MinecraftServer, localeCode: String): ServerLanguage =
+        fromJavaResource(server.resourceManager.namespaces, localeCode)
 
     private fun loadFromResourcePack(
         input: InputStream,

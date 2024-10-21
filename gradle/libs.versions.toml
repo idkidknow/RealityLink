@@ -1,7 +1,6 @@
 [versions]
 kotlin = "2.0.21"
 ktor = "3.0.0"
-moddev = "2.0.42-beta"
 
 [libraries]
 mixin = { module = "org.spongepowered:mixin", version = "0.8.7" }
@@ -25,5 +24,8 @@ kotlin-plugin = { module = "org.jetbrains.kotlin.jvm:org.jetbrains.kotlin.jvm.gr
 vanillagradle-plugin = { module = "org.spongepowered:vanillagradle", version = "0.2.1-SNAPSHOT" }
 
 [plugins]
-architectury-loom = { id = "dev.architectury.loom", version = "1.7-SNAPSHOT" }
+fabric-loom = { id = "fabric-loom", version = "1.8-SNAPSHOT" }
+forgegradle = { id = "net.minecraftforge.gradle", version = "6.0.29" }
+librarian = { id = "org.parchmentmc.librarian.forgegradle", version = "1.+" }
+mixingradle = { id = "org.spongepowered.mixin", version = "0.7-SNAPSHOT" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }

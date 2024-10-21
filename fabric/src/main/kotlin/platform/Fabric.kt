@@ -4,8 +4,6 @@ import com.idkidknow.mcreallink.api.UnitCallbackSet
 import com.idkidknow.mcreallink.api.invoke
 import com.idkidknow.mcreallink.mixin.complement.BroadcastingMessage
 import com.idkidknow.mcreallink.mixin.complement.ServerTranslate
-import com.idkidknow.mcreallink.mixin.mixin.MinecraftServerAccessor
-import com.idkidknow.mcreallink.mixin.mixin.SimpleReloadableResourceManagerAccessor
 import com.idkidknow.mcreallink.platform.BroadcastingMessageEvent
 import com.idkidknow.mcreallink.platform.Platform
 import com.idkidknow.mcreallink.platform.RegisterCommandsEvent
@@ -19,7 +17,6 @@ import net.minecraft.locale.Language
 import net.minecraft.network.chat.ChatType
 import net.minecraft.network.chat.Component
 import net.minecraft.network.chat.FormattedText
-import net.minecraft.server.MinecraftServer
 import net.minecraft.server.players.PlayerList
 import java.nio.file.Path
 
@@ -35,9 +32,6 @@ object Fabric: Platform {
             playerList.broadcastMessage(message, ChatType.SYSTEM, net.minecraft.Util.NIL_UUID)
         }
     }
-
-    override fun getNamespaces(server: MinecraftServer): Iterable<String> =
-        ((server as MinecraftServerAccessor).resources.resourceManager as SimpleReloadableResourceManagerAccessor).namespaces
 }
 
 object FabricEvents : PlatformEvents {

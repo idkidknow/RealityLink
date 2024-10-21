@@ -4,9 +4,10 @@ pluginManagement {
     repositories {
         gradlePluginPortal()
         mavenCentral()
-        maven("https://files.minecraftforge.net/maven/")
+        maven("https://maven.minecraftforge.net/")
         maven("https://maven.fabricmc.net/")
-        maven("https://maven.architectury.dev/")
+        maven("https://maven.parchmentmc.org/")
+        maven("https://repo.spongepowered.org/repository/maven-public/")
     }
 }
 

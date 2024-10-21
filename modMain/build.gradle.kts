@@ -1,5 +1,4 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
-import reallink.Versions
 
 plugins {
     id("reallink.common")
@@ -18,6 +17,7 @@ configurations.compileClasspath { extendsFrom(internal) }
 configurations.runtimeClasspath { extendsFrom(internal) }
 
 shade.exclude(group = "org.jetbrains.kotlin")
+shade.exclude(group = "org.slf4j", module = "slf4j-api")
 
 dependencies {
     compileOnly(libs.mixin)
@@ -33,14 +33,6 @@ dependencies {
     libs.ktor.server.netty.also { shade(it) }.also { internal(it) }
     libs.ktor.network.tls.certificates.also { shade(it) }.also { internal(it) }
     libs.ktor.serialization.kotlinx.json.also { shade(it) }.also { internal(it) }
-
-    // Minecraft 1.16.5 uses Log4j 2.8.1 but there's no such thing as
-    // a bridge between newest SLF4J and Log4j 2.8.1 (log4j-slf4j2-impl:2.8.1)
-    // so we use slf4j-simple here as a workaround
-    //
-    // defect: All logs are sent to stderr and shown with a verbose prefix in Minecraft's log.
-    // Logging level defaults to INFO and is not easy to change
-    "org.slf4j:slf4j-simple:2.0.16".also { shade(it) }.also { internal(it) }
 }
 
 configurations.register("shadedElements") {
