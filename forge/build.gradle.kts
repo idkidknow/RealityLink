@@ -60,7 +60,7 @@ mixin {
 val shadowModMain by configurations.registering
 val generateMetadata = registerGenerateMinimalForgeMetadataAttribute("generateMetadata") {
     modId = "${ModConstant.id}_main"
-    packFormat = 9
+    packFormat = 15
 }
 
 dependencies {

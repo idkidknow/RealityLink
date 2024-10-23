@@ -10,11 +10,10 @@ import com.idkidknow.mcreallink.platform.RegisterCommandsEvent
 import com.idkidknow.mcreallink.platform.PlatformEvents
 import com.idkidknow.mcreallink.platform.ServerStartingEvent
 import com.idkidknow.mcreallink.platform.ServerStoppingEvent
-import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback
+import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
 import net.fabricmc.loader.api.FabricLoader
 import net.minecraft.locale.Language
-import net.minecraft.network.chat.ChatType
 import net.minecraft.network.chat.Component
 import net.minecraft.network.chat.FormattedText
 import net.minecraft.server.players.PlayerList
@@ -29,7 +28,7 @@ object Fabric: Platform {
 
     override fun broadcastMessageWithoutCallback(playerList: PlayerList, message: Component) {
         BroadcastingMessage.ignoreTemporarily {
-            playerList.broadcastMessage(message, ChatType.SYSTEM, net.minecraft.Util.NIL_UUID)
+            playerList.broadcastSystemMessage(message, false)
         }
     }
 }
@@ -44,7 +43,7 @@ object FabricEvents : PlatformEvents {
     }
 
     override fun registerCommandsCallback(callback: (RegisterCommandsEvent) -> Unit) {
-        CommandRegistrationCallback.EVENT.register { dispatcher, _ ->
+        CommandRegistrationCallback.EVENT.register { dispatcher, _, _ ->
             callback(RegisterCommandsEvent(dispatcher))
         }
     }

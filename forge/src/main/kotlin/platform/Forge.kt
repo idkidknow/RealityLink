@@ -11,7 +11,6 @@ import com.idkidknow.mcreallink.platform.RegisterCommandsEvent
 import com.idkidknow.mcreallink.platform.ServerStartingEvent
 import com.idkidknow.mcreallink.platform.ServerStoppingEvent
 import net.minecraft.locale.Language
-import net.minecraft.network.chat.ChatType
 import net.minecraft.network.chat.Component
 import net.minecraft.network.chat.FormattedText
 import net.minecraft.server.players.PlayerList
@@ -28,7 +27,7 @@ object Forge: Platform {
 
     override fun broadcastMessageWithoutCallback(playerList: PlayerList, message: Component) {
         BroadcastingMessage.ignoreTemporarily {
-            playerList.broadcastMessage(message, ChatType.SYSTEM, net.minecraft.Util.NIL_UUID)
+            playerList.broadcastSystemMessage(message, false)
         }
     }
 }
