@@ -1,11 +1,9 @@
-rootProject.name = "RealityLink"
+rootProject.name = "reallink"
 
 pluginManagement {
     repositories {
         gradlePluginPortal()
         mavenCentral()
-        maven("https://files.minecraftforge.net/maven/")
-        maven("https://maven.fabricmc.net/")
     }
 }
 
@@ -13,7 +11,7 @@ plugins {
     id("org.gradle.toolchains.foojay-resolver-convention") version "0.8.0"
 }
 
-include("modMain")
-include("mixin")
-include("neoforge")
-include("fabric")
+includeBuild("mod-main")
+//include("mixin")
+//include("neoforge")
+//include("fabric")

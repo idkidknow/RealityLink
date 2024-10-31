@@ -1,0 +1,16 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "com.idkidknow.mcreallink.platform.neoforge121.mixin.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "LanguageMixin",
+    "PlayerListMixin"
+  ],
+  "client": [],
+  "server": [],
+  "injectors": {
+    "defaultRequire": 1
+  },
+  "refmap": "${mod_id}.refmap.json"
+}
