@@ -13,7 +13,7 @@ class CallbackSet<T, R> : CallbackRegistry<T, R> {
     private val callbacks = mutableSetOf<(T) -> R>()
     private val lock = Mutex()
 
-    val registry: CallbackRegistry<T, R> get() = this as CallbackRegistry<T, R>
+    val registry: CallbackRegistry<T, R> get() = this
 
     override fun addCallback(callback: (T) -> R) {
         runBlocking { lock.withLock {
@@ -50,7 +50,7 @@ class CallbackSet<T, R> : CallbackRegistry<T, R> {
     }
 
     /** Invokes all callbacks and returns the last one's result */
-    fun invokeAll(arg: T, defaultValue: R): R = invokeFold(arg, defaultValue) { curr, invokeNext ->
+    fun invokeAll(arg: T, defaultValue: R): R = invokeFold(arg, defaultValue) { _, invokeNext ->
         invokeNext()
     }
 }

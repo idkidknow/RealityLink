@@ -4,3 +4,10 @@ build
 .idea
 run
 *.log
+
+.vscode/
+target/
+.bloop/
+.metals/
+.bsp/
+metals.sbt
