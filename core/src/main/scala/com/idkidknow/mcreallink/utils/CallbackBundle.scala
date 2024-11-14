@@ -1,9 +1,9 @@
 package com.idkidknow.mcreallink.utils
 
-import cats.effect.kernel.Concurrent
-import cats.effect.kernel.Ref
-import cats.effect.kernel.implicits.*
-import cats.kernel.Semigroup
+import cats.effect.Concurrent
+import cats.effect.Ref
+import cats.effect.implicits.*
+import cats.Semigroup
 import cats.syntax.all.*
 
 trait CallbackBundle[F[_], A, R] {
@@ -15,13 +15,13 @@ trait CallbackBundle[F[_], A, R] {
 object CallbackBundle {
   def apply[F[_]: Concurrent, A](
       cont: (A => F[Unit]) => F[Unit],
-  ): F[CallbackBundle[F, A, Unit]] = apply[F, A, Unit](())(cont)
+  ): F[CallbackBundle[F, A, Unit]] = combineAll[F, A, Unit](())(cont)
 
   /** Create an empty callback bundle and generate a single function which can
    *  invoke all callbacks. The function generated will be passed to `cont` and
    *  therefore can be used as a single callback.
    */
-  def apply[F[_]: Concurrent, A, R: Semigroup](default: R)(
+  def combineAll[F[_]: Concurrent, A, R: Semigroup](default: R)(
       cont: (A => F[R]) => F[Unit],
   ): F[CallbackBundle[F, A, R]] = {
     def unifiedCallback(setRef: Ref[F, Set[A => F[R]]])(a: A): F[R] =

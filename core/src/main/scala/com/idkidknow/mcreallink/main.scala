@@ -18,7 +18,7 @@ def modInit[P[_], F[_]: Concurrent: LoggerFactory](using Platform[P, F]): F[Unit
       Events[P, F].onServerStopping(_ => cb(()))
     }
 
-    onCallingStartCommand <- CallbackBundle[F, Unit, Either[Throwable, Unit]](
+    onCallingStartCommand <- CallbackBundle.combineAll[F, Unit, Either[Throwable, Unit]](
       ().asRight,
     ) { cb =>
       Events[P, F].onCallingStartCommand(() => cb(()))
