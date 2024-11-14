@@ -1,5 +1,7 @@
 package com.idkidknow.mcreallink.lib.platform
 
+import fs2.io.file.Path
+
 /** DSL that encodes Minecraft & modloader specific types and functions
  *
  *  @tparam P
@@ -13,4 +15,11 @@ trait Platform[P[_], F[_]] {
   val componentClass: ComponentClass[P]
   val minecraftServerClass: MinecraftServerClass[P, F]
   val events: Events[P, F]
+
+  def gameRootDirectory: Path
+  def configDirectory: Path
+}
+
+object Platform {
+  def apply[P[_], F[_]](using inst: Platform[P, F]) = inst
 }

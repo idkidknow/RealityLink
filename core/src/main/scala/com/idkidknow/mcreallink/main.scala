@@ -9,9 +9,13 @@ import com.idkidknow.mcreallink.lib.platform.MinecraftServer
 import com.idkidknow.mcreallink.lib.platform.Platform
 import com.idkidknow.mcreallink.utils.CallbackBundle
 import org.typelevel.log4cats.LoggerFactory
-import cats.Applicative
+import com.idkidknow.mcreallink.lib.ConfigReader
+import cats.Monad
+import com.idkidknow.mcreallink.server.ApiServer
 
-def modInit[P[_], F[_]: Concurrent: LoggerFactory](using Platform[P, F]): F[Unit] = {
+def modInit[P[_], F[_]: Concurrent: LoggerFactory](
+  configReader: ConfigReader[P, F],
+)(using Platform[P, F]): F[Unit] = {
   val logger = LoggerFactory[F].getLogger
   for {
     onServerStopping <- CallbackBundle[F, Unit] { cb =>
@@ -39,7 +43,7 @@ def modInit[P[_], F[_]: Concurrent: LoggerFactory](using Platform[P, F]): F[Unit
 
     _ <- Events[P, F].onServerStarting { server =>
       logger.info("Minecraft server starting") *>
-        ModMain.make(server, modEvents).flatMap { modMain =>
+        ModMain.make(server, modEvents, configReader).flatMap { modMain =>
           def clean: Unit => F[Unit] = { _ =>
             logger.info("Minecraft server stopping") *> modMain.clean *>
               (onServerStopping - clean) // We need to cancel the callback to avoid "double free"
@@ -54,18 +58,26 @@ def modInit[P[_], F[_]: Concurrent: LoggerFactory](using Platform[P, F]): F[Unit
 final class ModMain[P[_], F[_]: LoggerFactory] private (
     val server: P[MinecraftServer],
     val modEvents: ModEvents[P, F],
+    val configReader: ConfigReader[P, F],
+    val apiServer: Option[ApiServer],
 ) {
   val logger = LoggerFactory[F].getLogger
   def clean: F[Unit] = ???
 }
 
 object ModMain {
-  def make[P[_], F[_]: Applicative: LoggerFactory](
+  def make[P[_], F[_]: Monad: LoggerFactory](
       server: P[MinecraftServer],
       modEvents: ModEvents[P, F],
+      configReader: ConfigReader[P, F],
   )(using Platform[P, F]): F[ModMain[P, F]] = {
-    // auto-start logic
-    // ...
-    ModMain(server, modEvents).pure[F]
+    val config = configReader.read(server)
+    config.flatMap { config =>
+      if (config.autoStart) {
+        ???
+      } else {
+        ModMain(server, modEvents, configReader, None).pure[F]
+      }
+    }
   }
 }

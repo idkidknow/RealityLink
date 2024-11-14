@@ -13,6 +13,7 @@ import de.lhns.fs2.compress.Unarchiver
 import fs2.io.file.Files
 import fs2.io.file.Path
 import org.typelevel.log4cats.Logger
+import com.idkidknow.mcreallink.utils.decodeToml
 
 final case class ServerToml(
     port: Int,
@@ -37,15 +38,22 @@ object ModConfig {
     Platform[P, F],
     Unarchiver[F, Option, ?],
   ): F[ModConfig[P]] = {
+    val gameRootDirectory = Platform[P, F].gameRootDirectory
+    val configDirectory = Platform[P, F].configDirectory
+    val certChain = serverToml.certChain.map(configDirectory.resolve(_))
+    val privateKey = serverToml.privateKey.map(configDirectory.resolve(_))
+    val root = serverToml.root.map(configDirectory.resolve(_))
+    val resourcePackDir = gameRootDirectory.resolve(serverToml.resourcePackDir)
+
     val tlsConfig: F[TlsConfig] =
-      (serverToml.certChain, serverToml.privateKey, serverToml.root) match {
+      (certChain, privateKey, root) match {
         case (Some(certChain), Some(privateKey), None) =>
           TlsConfig
-            .Tls(Path(certChain), Path(privateKey))
+            .Tls(certChain, privateKey)
             .pure[F]
         case (Some(certChain), Some(privateKey), Some(root)) =>
           TlsConfig
-            .MutualTls(Path(certChain), Path(privateKey), Path(root))
+            .MutualTls(certChain, privateKey, root)
             .pure[F]
         case (None, None, None) =>
           TlsConfig.None.pure[F]
@@ -54,7 +62,7 @@ object ModConfig {
       }
     val language: F[P[Language]] = {
       val fallback = LanguageMap.fromServer(server, serverToml.localeCode)
-      val resourcePack = LanguageMap.fromResourcePackDirectory(Path(serverToml.resourcePackDir), serverToml.localeCode)
+      val resourcePack = LanguageMap.fromResourcePackDirectory(resourcePackDir, serverToml.localeCode)
       (fallback, resourcePack).parMapN { (fallback, resourcePack) =>
         fallback.combine(resourcePack).toLanguage
       }
@@ -64,6 +72,24 @@ object ModConfig {
     }
     apiServerConfig.map {
       ModConfig(_, serverToml.autoStart)
+    }
+  }
+
+  def fromConfigFile[P[_], F[_]: Concurrent: Logger: Files](
+    server: P[MinecraftServer],
+  )(using
+    Platform[P, F],
+    Unarchiver[F, Option, ?],
+  ): F[ModConfig[P]] = {
+    val serverTomlPath = Platform[P, F].configDirectory / "server.toml"
+    val serverTomlString = Files[F].readUtf8(serverTomlPath).compile.string
+    import io.circe.generic.auto.*
+    serverTomlString.flatMap { str =>
+      decodeToml[ServerToml](str) match {
+        case Right(serverToml) =>
+          ModConfig.fromServerToml(serverToml, server)
+        case Left(e) => e.raiseError
+      }
     }
   }
 }
