@@ -14,32 +14,37 @@ import cats.Monad
 import com.idkidknow.mcreallink.server.ApiServer
 
 def modInit[P[_], F[_]: Concurrent: LoggerFactory](
-  configReader: ConfigReader[P, F],
+    configReader: ConfigReader[P, F],
 )(using Platform[P, F]): F[Unit] = {
   val logger = LoggerFactory[F].getLogger
-  for {
-    onServerStopping <- CallbackBundle[F, Unit] { cb =>
-      Events[P, F].onServerStopping(_ => cb(()))
-    }
 
-    onCallingStartCommand <- CallbackBundle.combineAll[F, Unit, Either[Throwable, Unit]](
-      ().asRight,
-    ) { cb =>
-      Events[P, F].onCallingStartCommand(() => cb(()))
-    }
+  val modEvents = for {
+    onCallingStartCommand <- CallbackBundle
+      .combineAll[F, Unit, Either[Throwable, Unit]](
+        ().asRight,
+      ) { cb =>
+        Events[P, F].onCallingStartCommand(() => cb(()))
+      }
     onCallingStopCommand <- CallbackBundle[F, Unit] { cb =>
       Events[P, F].onCallingStopCommand(() => cb(()))
     }
     onBroadcastingMessage <- CallbackBundle[F, P[Component]] { cb =>
       Events[P, F].onBroadcastingMessage(cb)
     }
-    modEvents = ModEvents(
-      onCallingStartCommand,
-      onCallingStopCommand,
-      onBroadcastingMessage,
-    )
+  } yield ModEvents(
+    onCallingStartCommand,
+    onCallingStopCommand,
+    onBroadcastingMessage,
+  )
 
+  val onServerStopping = CallbackBundle[F, Unit] { cb =>
+    Events[P, F].onServerStopping(_ => cb(()))
+  }
+
+  for {
     _ <- logger.info("RealityLink mod initializing")
+    modEvents <- modEvents
+    onServerStopping <- onServerStopping
 
     _ <- Events[P, F].onServerStarting { server =>
       logger.info("Minecraft server starting") *>
@@ -51,7 +56,6 @@ def modInit[P[_], F[_]: Concurrent: LoggerFactory](
           onServerStopping + clean
         }
     }
-
   } yield ()
 }
 
@@ -71,13 +75,19 @@ object ModMain {
       modEvents: ModEvents[P, F],
       configReader: ConfigReader[P, F],
   )(using Platform[P, F]): F[ModMain[P, F]] = {
-    val config = configReader.read(server)
-    config.flatMap { config =>
-      if (config.autoStart) {
-        ???
-      } else {
-        ModMain(server, modEvents, configReader, None).pure[F]
+    val logger = LoggerFactory[F].getLogger
+
+    val apiServer: F[Option[ApiServer]] = configReader.read(server).flatMap {
+      case Left(e) =>
+        logger.error(e)("failed to read config file") *> None.pure[F]
+      case Right(config) => {
+        if (config.autoStart) {
+          ???
+        } else {
+          None.pure[F]
+        }
       }
     }
+    apiServer.map(ModMain(server, modEvents, configReader, _))
   }
 }

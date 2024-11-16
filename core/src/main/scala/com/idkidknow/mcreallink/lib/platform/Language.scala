@@ -11,10 +11,8 @@ trait LanguageClass[P[_], F[_]] {
   def classLoaderResourceStream(path: String): Stream[F, Byte]
   def parseLanguageFile(
       stream: Stream[F, Byte],
-  ): F[Either[IllegalLanguageFileException, Map[String, String]]]
+  ): F[Option[Map[String, String]]]
 }
-
-class IllegalLanguageFileException extends Exception
 
 object Language {
   def apply[P[_], F[_]](using inst: LanguageClass[P, F]) = inst

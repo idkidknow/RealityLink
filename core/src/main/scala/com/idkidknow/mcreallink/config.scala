@@ -14,6 +14,10 @@ import fs2.io.file.Files
 import fs2.io.file.Path
 import org.typelevel.log4cats.Logger
 import com.idkidknow.mcreallink.utils.decodeToml
+import com.idkidknow.mcreallink.lib.ConfigReadingException
+import cats.data.EitherT
+import com.idkidknow.mcreallink.utils.ParseException
+import java.io.IOException
 
 final case class ServerToml(
     port: Int,
@@ -35,9 +39,11 @@ object ModConfig {
       serverToml: ServerToml,
       server: P[MinecraftServer],
   )(using
-    Platform[P, F],
-    Unarchiver[F, Option, ?],
-  ): F[ModConfig[P]] = {
+      Platform[P, F],
+      Unarchiver[F, Option, ?],
+  ): F[Either[ConfigReadingException, ModConfig[P]]] = {
+    type FE[A] = EitherT[F, ConfigReadingException, A]
+
     val gameRootDirectory = Platform[P, F].gameRootDirectory
     val configDirectory = Platform[P, F].configDirectory
     val certChain = serverToml.certChain.map(configDirectory.resolve(_))
@@ -45,24 +51,29 @@ object ModConfig {
     val root = serverToml.root.map(configDirectory.resolve(_))
     val resourcePackDir = gameRootDirectory.resolve(serverToml.resourcePackDir)
 
-    val tlsConfig: F[TlsConfig] =
+    val tlsConfig: FE[TlsConfig] =
       (certChain, privateKey, root) match {
         case (Some(certChain), Some(privateKey), None) =>
           TlsConfig
             .Tls(certChain, privateKey)
-            .pure[F]
+            .pure[FE]
         case (Some(certChain), Some(privateKey), Some(root)) =>
           TlsConfig
             .MutualTls(certChain, privateKey, root)
-            .pure[F]
+            .pure[FE]
         case (None, None, None) =>
-          TlsConfig.None.pure[F]
+          TlsConfig.None.pure[FE]
         case _ =>
-          IllegalArgumentException("Invalid server.toml tls config").raiseError
+          EitherT.leftT(
+            ConfigReadingException.Format("Invalid server.toml tls config")
+          )
       }
-    val language: F[P[Language]] = {
+    val language: FE[P[Language]] = EitherT.right {
       val fallback = LanguageMap.fromServer(server, serverToml.localeCode)
-      val resourcePack = LanguageMap.fromResourcePackDirectory(resourcePackDir, serverToml.localeCode)
+      val resourcePack = LanguageMap.fromResourcePackDirectory(
+        resourcePackDir,
+        serverToml.localeCode,
+      )
       (fallback, resourcePack).parMapN { (fallback, resourcePack) =>
         fallback.combine(resourcePack).toLanguage
       }
@@ -72,24 +83,37 @@ object ModConfig {
     }
     apiServerConfig.map {
       ModConfig(_, serverToml.autoStart)
-    }
+    }.value
   }
 
   def fromConfigFile[P[_], F[_]: Concurrent: Logger: Files](
-    server: P[MinecraftServer],
+      server: P[MinecraftServer]
   )(using
-    Platform[P, F],
-    Unarchiver[F, Option, ?],
-  ): F[ModConfig[P]] = {
+      Platform[P, F],
+      Unarchiver[F, Option, ?],
+  ): F[Either[ConfigReadingException, ModConfig[P]]] = {
+    type FE[A] = EitherT[F, ConfigReadingException, A]
+
     val serverTomlPath = Platform[P, F].configDirectory / "server.toml"
-    val serverTomlString = Files[F].readUtf8(serverTomlPath).compile.string
+    val serverTomlString: FE[String] = EitherT(
+      Files[F]
+        .readUtf8(serverTomlPath)
+        .compile
+        .string
+        .attemptNarrow[IOException]
+        .map { ioEither =>
+          ioEither.leftMap(e => ConfigReadingException.IO(e))
+        }
+    )
+
     import io.circe.generic.auto.*
     serverTomlString.flatMap { str =>
       decodeToml[ServerToml](str) match {
         case Right(serverToml) =>
-          ModConfig.fromServerToml(serverToml, server)
-        case Left(e) => e.raiseError
+          EitherT(ModConfig.fromServerToml(serverToml, server))
+        case Left(e) =>
+          EitherT.leftT(ConfigReadingException.Parsing(e))
       }
-    }
+    }.value
   }
 }

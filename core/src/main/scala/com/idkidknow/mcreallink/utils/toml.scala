@@ -26,7 +26,7 @@ def tomlValueToCirce(value: toml.Value): Either[TomlToJsonException, Json] =
       Json.fromLong(value).asRight[TomlToJsonException]
     case toml.Value.Real(value) =>
       Json.fromDouble(value) match {
-        case None        => TomlToJsonException.FailFromReal.asLeft[Json]
+        case None => TomlToJsonException.FailFromReal.asLeft[Json]
         case Some(value) => value.asRight[TomlToJsonException]
       }
     case toml.Value.Str(value) =>
