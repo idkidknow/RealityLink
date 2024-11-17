@@ -1,4 +1,4 @@
-package com.idkidknow.mcrealcomm.utils
+package com.idkidknow.mcreallink.utils
 
 import cats.Monad
 import cats.Monoid

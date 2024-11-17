@@ -1,9 +1,9 @@
-package com.idkidknow.mcrealcomm
+package com.idkidknow.mcreallink
 
 import cats.effect.Concurrent
 import cats.effect.implicits.*
 import cats.syntax.all.*
-import com.idkidknow.mcrealcomm.utils.LanguageMap
+import com.idkidknow.mcreallink.utils.LanguageMap
 import com.idkidknow.mcreallink.lib.platform.Language
 import com.idkidknow.mcreallink.lib.platform.MinecraftServer
 import com.idkidknow.mcreallink.lib.platform.Platform

@@ -12,6 +12,4 @@ plugins {
 }
 
 includeBuild("mod-main")
-//include("mixin")
-//include("neoforge")
-//include("fabric")
+includeBuild("core")

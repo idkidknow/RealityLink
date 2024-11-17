@@ -1,13 +1,10 @@
-.gradle
-.kotlin
+.gradle/
+.kotlin/
 build
-.idea
-run
+.idea/
+run/
 *.log
-
 .vscode/
 target/
 .bloop/
 .metals/
-.bsp/
-metals.sbt

@@ -2,7 +2,7 @@ package com.idkidknow.mcreallink
 
 import cats.effect.kernel.Concurrent
 import cats.syntax.all.*
-import com.idkidknow.mcrealcomm.ModEvents
+import com.idkidknow.mcreallink.ModEvents
 import com.idkidknow.mcreallink.lib.platform.Component
 import com.idkidknow.mcreallink.lib.platform.Events
 import com.idkidknow.mcreallink.lib.platform.MinecraftServer
@@ -65,7 +65,7 @@ final class ModMain[P[_], F[_]: LoggerFactory] private (
     val configReader: ConfigReader[P, F],
     val apiServer: Option[ApiServer],
 ) {
-  val logger = LoggerFactory[F].getLogger
+  private val logger = LoggerFactory[F].getLogger
   def clean: F[Unit] = ???
 }
 

@@ -1,6 +1,6 @@
 package com.idkidknow.mcreallink.lib
 
-import com.idkidknow.mcrealcomm.ModConfig
+import com.idkidknow.mcreallink.ModConfig
 import com.idkidknow.mcreallink.lib.platform.MinecraftServer
 import java.io.IOException
 

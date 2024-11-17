@@ -1,4 +1,4 @@
-package com.idkidknow.mcrealcomm
+package com.idkidknow.mcreallink
 
 import com.idkidknow.mcreallink.lib.platform.Component
 import com.idkidknow.mcreallink.utils.CallbackBundle
