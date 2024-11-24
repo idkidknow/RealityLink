@@ -46,8 +46,8 @@ object ModConfig {
 
     val gameRootDirectory = Platform[P, F].gameRootDirectory
     val configDirectory = Platform[P, F].configDirectory
-    val certChain = serverToml.certChain.map(configDirectory.resolve(_))
-    val privateKey = serverToml.privateKey.map(configDirectory.resolve(_))
+    val certChain = serverToml.certChain.map(configDirectory.resolve)
+    val privateKey = serverToml.privateKey.map(configDirectory.resolve)
     val root = serverToml.root.map(configDirectory.resolve(_))
     val resourcePackDir = gameRootDirectory.resolve(serverToml.resourcePackDir)
 

@@ -21,5 +21,5 @@ trait Platform[P[_], F[_]] {
 }
 
 object Platform {
-  def apply[P[_], F[_]](using inst: Platform[P, F]) = inst
+  def apply[P[_], F[_]](using inst: Platform[P, F]): Platform[P, F] = inst
 }

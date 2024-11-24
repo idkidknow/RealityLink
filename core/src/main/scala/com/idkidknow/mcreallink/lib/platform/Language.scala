@@ -15,7 +15,7 @@ trait LanguageClass[P[_], F[_]] {
 }
 
 object Language {
-  def apply[P[_], F[_]](using inst: LanguageClass[P, F]) = inst
+  def apply[P[_], F[_]](using inst: LanguageClass[P, F]): LanguageClass[P, F] = inst
 }
 
 object LanguageClass {

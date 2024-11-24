@@ -9,7 +9,7 @@ trait ComponentClass[P[_]] {
 }
 
 object Component {
-  def apply[P[_]](using inst: ComponentClass[P]) = inst
+  def apply[P[_]](using inst: ComponentClass[P]): ComponentClass[P] = inst
 }
 
 object ComponentClass {

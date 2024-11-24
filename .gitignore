@@ -8,3 +8,5 @@ run/
 target/
 .bloop/
 .metals/
+bin/
+*.code-workspace

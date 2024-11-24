@@ -56,12 +56,12 @@ object LanguageMap {
       localeCode: String,
   )(using LanguageClass[P, F]): F[LanguageMap] = {
     def load(namespace: String, localeCode: String): F[LanguageMap] = {
-      val path = s"/assets/$namespace/lang/$localeCode.json"
+      val path = show"/assets/$namespace/lang/$localeCode.json"
       val stream = Language[P, F].classLoaderResourceStream(path)
-      Logger[F].debug(s"Loading Java resources $path") *>
+      Logger[F].debug(show"Loading Java resources $path") *>
         loadLanguageFile(
           stream,
-          onFailure = Logger[F].warn(s"$path is not a valid language file"),
+          onFailure = Logger[F].warn(show"$path is not a valid language file"),
         )
     }
     namespaces.map(load(_, localeCode)).toList.parFoldMapA(identity)
@@ -71,7 +71,7 @@ object LanguageMap {
       server: P[MinecraftServer],
       localeCode: String,
   )(using LanguageClass[P, F], MinecraftServerClass[P, F]): F[LanguageMap] =
-    MinecraftServer[P, F].resourceNamespaces.flatMap { namespaces =>
+    MinecraftServer[P, F].resourceNamespaces(server).flatMap { namespaces =>
       fromJavaResource(namespaces, localeCode)
     }
 
@@ -86,11 +86,11 @@ object LanguageMap {
       .through(U.unarchive)
       .flatMap { (entry, data) =>
         val name = entry.name
-        val regex = s"^assets/[^/]+/lang/$localeCode.json$$".r
+        val regex = show"^assets/[^/]+/lang/$localeCode.json$$".r
         if (regex.matches(name)) {
           val fLanguageMap = loadLanguageFile(
             data,
-            onFailure = Logger[F].warn(s"$name is not a valid language file"),
+            onFailure = Logger[F].warn(show"$name is not a valid language file"),
           )
           Stream.eval(fLanguageMap)
         } else {
@@ -125,7 +125,7 @@ object LanguageMap {
           Stream.eval(
             fromResourcePackFile(path, localeCode).recoverWith {
               case e: IOException =>
-                Logger[F].warn(e)(s"Failed to read $path. Skipping.") *>
+                Logger[F].warn(e)(show"Failed to read $path. Skipping.") *>
                   Map.empty[String, String].pure[F]
             },
           )
