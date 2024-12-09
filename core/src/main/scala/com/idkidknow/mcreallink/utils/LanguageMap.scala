@@ -1,14 +1,9 @@
 package com.idkidknow.mcreallink.utils
 
-import cats.Monad
 import cats.Monoid
-import cats.effect.Concurrent
+import cats.effect.Async
 import cats.effect.implicits.*
 import cats.syntax.all.*
-import com.idkidknow.mcreallink.lib.platform.Language
-import com.idkidknow.mcreallink.lib.platform.LanguageClass
-import com.idkidknow.mcreallink.lib.platform.MinecraftServer
-import com.idkidknow.mcreallink.lib.platform.MinecraftServerClass
 import de.lhns.fs2.compress.Unarchiver
 import fs2.Pipe
 import fs2.Stream
@@ -16,6 +11,7 @@ import fs2.io.file.Files
 import fs2.io.file.Path
 import fs2.io.file.WalkOptions
 import org.typelevel.log4cats.Logger
+import com.idkidknow.mcreallink.minecraft.Minecraft
 
 import java.io.IOException
 
@@ -25,8 +21,7 @@ object LanguageMap {
   def apply(map: Map[String, String]): LanguageMap = map
 
   extension (self: LanguageMap) {
-    def toLanguage[P[_], F[_]](using LanguageClass[P, F]): P[Language] =
-      Language[P, F].create(key => self.get(key))
+    def toFunction: String => Option[String] = { key => self.get(key) }
   }
 
   /** Noncommutative monoid. `combine(x, y)` prefer values in `y`. */
@@ -36,98 +31,110 @@ object LanguageMap {
   }
 
   /** Returns empty when failed */
-  private def loadLanguageFile[P[_], F[_]: Monad](
+  private def loadLanguageFile[F[_]: Async](
       stream: Stream[F, Byte],
       onFailure: F[Unit],
-  )(using LanguageClass[P, F]): F[LanguageMap] = {
-    Language[P, F].parseLanguageFile(stream).flatMap {
-      case Some(map) => map.pure[F]
-      case None => onFailure *> Map.empty.pure[F]
-    }
-  }
+  )(using mc: Minecraft): F[LanguageMap] = for {
+    inputStream <- stream.through(fs2.io.toInputStream).compile.onlyOrError
+    map <- Async[F]
+      .blocking(mc.Language.parseLanguageFile(inputStream))
+      .flatMap {
+        case Some(map) => map.pure[F]
+        case None => onFailure *> Map.empty.pure[F]
+      }
+  } yield map
 
   /** Read language files in Java resources
    *
    *  Under normal circumstances, there are Minecraft's en_us.json, and language
    *  jsons in every mods' jar file
    */
-  def fromJavaResource[P[_], F[_]: Concurrent: Logger](
+  def fromJavaResource[F[_]: Async: Logger](
       namespaces: Iterable[String],
       localeCode: String,
-  )(using LanguageClass[P, F]): F[LanguageMap] = {
-    def load(namespace: String, localeCode: String): F[LanguageMap] = {
-      val path = show"/assets/$namespace/lang/$localeCode.json"
-      val stream = Language[P, F].classLoaderResourceStream(path)
+  )(using mc: Minecraft): F[LanguageMap] = {
+    def load(namespace: String, localeCode: String, ext: String): F[LanguageMap] = {
+      val path = show"/assets/$namespace/lang/$localeCode.$ext"
+      val stream = fs2.io.readInputStream(
+        Async[F].delay(mc.Language.classLoaderResourceStream(path)),
+        4096,
+      )
       Logger[F].debug(show"Loading Java resources $path") *>
         loadLanguageFile(
           stream,
           onFailure = Logger[F].warn(show"$path is not a valid language file"),
         )
     }
-    namespaces.map(load(_, localeCode)).toList.parFoldMapA(identity)
+    // namespaces.map(load(_, localeCode, "json")).toList.parFoldMapA(identity)
+    namespaces.map(load(_, localeCode, "lang")).toList.parFoldMapA(identity)
   }
 
-  def fromServer[P[_], F[_]: Concurrent: Logger](
-      server: P[MinecraftServer],
+  def fromServer[F[_]: Async: Logger](using mc: Minecraft)(
+      server: mc.MinecraftServer,
       localeCode: String,
-  )(using LanguageClass[P, F], MinecraftServerClass[P, F]): F[LanguageMap] =
-    MinecraftServer[P, F].resourceNamespaces(server).flatMap { namespaces =>
-      fromJavaResource(namespaces, localeCode)
+  ): F[LanguageMap] =
+    Async[F].delay(mc.MinecraftServer.resourceNamespaces(server)).flatMap {
+      namespaces =>
+        fromJavaResource(namespaces, localeCode)
     }
 
-  def fromResourcePack[P[_], F[_]: Concurrent: Logger](
+  def fromResourcePack[F[_]: Async: Logger](
       stream: Stream[F, Byte],
       localeCode: String,
   )(using
-      L: LanguageClass[P, F],
+      mc: Minecraft,
       U: Unarchiver[F, Option, ?],
   ): F[LanguageMap] = {
     stream
       .through(U.unarchive)
-      .flatMap { (entry, data) =>
+      .flatMap { case (entry, data) =>
         val name = entry.name
-        val regex = show"^assets/[^/]+/lang/$localeCode.json$$".r
+        // val regex = show"^assets/[^/]+/lang/$localeCode.json$$".r
+        val regex = show"^assets/[^/]+/lang/$localeCode.lang$$".r
         if (regex.matches(name)) {
           val fLanguageMap = loadLanguageFile(
             data,
             onFailure = Logger[F].warn(show"$name is not a valid language file"),
           )
-          Stream.eval(fLanguageMap)
+          Stream.eval(Logger[F].info(show"Loading entry: $name") *> fLanguageMap)
         } else {
           Stream.empty
         }
       }
       .compile
-      .fold(Map.empty[String, String]) { (acc, value) => acc ++ value }
+      .fold(Map.empty[String, String]) { case (acc, value) =>
+        acc ++ value
+      }
   }
 
-  def fromResourcePackFile[P[_], F[_]: Concurrent: Logger: Files](
+  def fromResourcePackFile[F[_]: Async: Logger: Files](
       path: Path,
       localeCode: String,
   )(using
-      LanguageClass[P, F],
-      Unarchiver[F, Option, ?],
+      mc: Minecraft,
+      U: Unarchiver[F, Option, ?],
   ): F[LanguageMap] = {
     val stream = Files[F].readAll(path)
-    fromResourcePack(stream, localeCode)
+    Logger[F].info(show"Loading resource pack $path") *>
+      fromResourcePack(stream, localeCode)
   }
 
-  def fromResourcePackDirectory[P[_], F[_]: Concurrent: Logger: Files](
+  def fromResourcePackDirectory[F[_]: Async: Logger: Files](
       directoryPath: Path,
       localeCode: String,
   )(using
-      LanguageClass[P, F],
-      Unarchiver[F, Option, ?],
+      mc: Minecraft,
+      U: Unarchiver[F, Option, ?],
   ): F[LanguageMap] = {
     def readFile: Pipe[F, Path, LanguageMap] = { paths =>
       paths.flatMap { path =>
-        if (path.extName === "zip") {
+        if (path.extName === ".zip") {
           Stream.eval(
             fromResourcePackFile(path, localeCode).recoverWith {
               case e: IOException =>
                 Logger[F].warn(e)(show"Failed to read $path. Skipping.") *>
                   Map.empty[String, String].pure[F]
-            },
+            }
           )
         } else {
           Stream.empty

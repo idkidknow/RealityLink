@@ -1,0 +1,13 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "com.idkidknow.mcreallink.forge1710.mixin.mixin",
+  "compatibilityLevel": "JAVA_8",
+  "mixins": [
+    "ChatComponentTranslationMixin",
+    "ServerConfigurationManagerMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
