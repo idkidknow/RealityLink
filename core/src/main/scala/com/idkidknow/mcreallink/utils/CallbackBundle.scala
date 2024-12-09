@@ -1,15 +1,15 @@
 package com.idkidknow.mcreallink.utils
 
-import cats.Semigroup
 import cats.Apply
+import cats.Semigroup
 import cats.effect.Concurrent
 import cats.effect.Ref
 import cats.effect.implicits.*
+import cats.effect.kernel.Async
 import cats.effect.kernel.Resource
 import cats.effect.std.Queue
 import cats.syntax.all.*
 import fs2.Stream
-import cats.effect.kernel.Async
 
 trait CallbackBundle[F[_], A, R] {
   def +=(callback: A => F[R]): F[Unit]

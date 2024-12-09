@@ -1,27 +1,27 @@
 package com.idkidknow.mcreallink
 
+import cats.effect.IO
+import cats.effect.implicits.*
 import cats.effect.kernel.Async
+import cats.effect.kernel.Fiber
+import cats.effect.kernel.Ref
 import cats.effect.std.Dispatcher
 import cats.effect.std.Supervisor
 import cats.syntax.all.*
+import com.idkidknow.mcreallink.lib.GameChat
 import com.idkidknow.mcreallink.lib.Leak
 import com.idkidknow.mcreallink.lib.MinecraftServer
-import com.idkidknow.mcreallink.minecraft.Minecraft
-import com.idkidknow.mcreallink.utils.CallbackBundle
-import fs2.Stream
-import org.typelevel.log4cats.LoggerFactory
-import com.idkidknow.mcreallink.lib.GameChat
-import com.idkidknow.mcreallink.server.RealityLinkServer
-import com.idkidknow.mcreallink.server.ChatInterface
 import com.idkidknow.mcreallink.lib.ModConfig
-import org.typelevel.log4cats.Logger
+import com.idkidknow.mcreallink.minecraft.Minecraft
+import com.idkidknow.mcreallink.server.ChatInterface
+import com.idkidknow.mcreallink.server.RealityLinkServer
+import com.idkidknow.mcreallink.utils.CallbackBundle
 import de.lhns.fs2.compress.Unarchiver
 import de.lhns.fs2.compress.ZipUnarchiver
+import fs2.Stream
 import fs2.io.file.Files
-import cats.effect.kernel.Fiber
-import cats.effect.kernel.Ref
-import cats.effect.implicits.*
-import cats.effect.IO
+import org.typelevel.log4cats.Logger
+import org.typelevel.log4cats.LoggerFactory
 
 def entry(mc: Minecraft, loggerFactory: LoggerFactory[IO]): Unit = {
   given Minecraft = mc

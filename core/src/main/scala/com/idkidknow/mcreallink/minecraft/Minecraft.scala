@@ -1,7 +1,7 @@
 package com.idkidknow.mcreallink.minecraft
 
-import java.nio.file.Path
 import java.io.InputStream
+import java.nio.file.Path
 
 /** Interact with Minecraft and modloader. Resembles the Minecraft API (mojmap)
  *  and easy to implement with zero dependencies.

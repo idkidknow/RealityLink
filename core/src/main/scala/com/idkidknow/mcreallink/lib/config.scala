@@ -1,19 +1,20 @@
 package com.idkidknow.mcreallink.lib
 
-import java.io.IOException
-import com.idkidknow.mcreallink.server.RealityLinkServerConfig
-import org.typelevel.log4cats.Logger
-import cats.effect.implicits.*
-import fs2.io.file.Files
-import fs2.io.file.Path
-import com.idkidknow.mcreallink.minecraft.Minecraft
-import de.lhns.fs2.compress.Unarchiver
 import cats.data.EitherT
-import com.idkidknow.mcreallink.server.TlsConfig
+import cats.effect.implicits.*
+import cats.effect.kernel.Async
 import cats.syntax.all.*
+import com.idkidknow.mcreallink.minecraft.Minecraft
+import com.idkidknow.mcreallink.server.RealityLinkServerConfig
+import com.idkidknow.mcreallink.server.TlsConfig
 import com.idkidknow.mcreallink.utils.LanguageMap
 import com.idkidknow.mcreallink.utils.decodeToml
-import cats.effect.kernel.Async
+import de.lhns.fs2.compress.Unarchiver
+import fs2.io.file.Files
+import fs2.io.file.Path
+import org.typelevel.log4cats.Logger
+
+import java.io.IOException
 
 final case class ModConfig(
     serverConfig: RealityLinkServerConfig,

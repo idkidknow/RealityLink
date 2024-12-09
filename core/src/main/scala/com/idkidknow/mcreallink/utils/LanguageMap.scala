@@ -4,6 +4,7 @@ import cats.Monoid
 import cats.effect.Async
 import cats.effect.implicits.*
 import cats.syntax.all.*
+import com.idkidknow.mcreallink.minecraft.Minecraft
 import de.lhns.fs2.compress.Unarchiver
 import fs2.Pipe
 import fs2.Stream
@@ -11,7 +12,6 @@ import fs2.io.file.Files
 import fs2.io.file.Path
 import fs2.io.file.WalkOptions
 import org.typelevel.log4cats.Logger
-import com.idkidknow.mcreallink.minecraft.Minecraft
 
 import java.io.IOException
 

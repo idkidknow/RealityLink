@@ -1,7 +1,7 @@
 package com.idkidknow.mcreallink.server
 
-import fs2.Stream
 import com.idkidknow.mcreallink.lib.GameChat
+import fs2.Stream
 
 trait ChatInterface[F[_]] {
   def outwardMessages: Stream[F, ChatEvent]

@@ -1,19 +1,19 @@
 package com.idkidknow.mcreallink.common
 
-import cats.syntax.all.*
-import cats.kernel.Monoid
-import cats.effect.Concurrent
-import fs2.Stream
-import org.typelevel.log4cats.Logger
-import de.lhns.fs2.compress.Unarchiver
-import java.util.zip.ZipEntry
 import cats.Apply
-import java.util.zip.ZipException
-import java.io.IOException
-import fs2.text
-import fs2.io.file.Path
+import cats.effect.Concurrent
+import cats.kernel.Monoid
+import cats.syntax.all.*
+import de.lhns.fs2.compress.Unarchiver
+import fs2.Stream
 import fs2.io.file.Files
+import fs2.io.file.Path
 import fs2.io.file.WalkOptions
+import fs2.text
+import org.typelevel.log4cats.Logger
+
+import java.io.IOException
+import java.util.zip.ZipEntry
 
 opaque type LanguageMap = Map[String, String]
 

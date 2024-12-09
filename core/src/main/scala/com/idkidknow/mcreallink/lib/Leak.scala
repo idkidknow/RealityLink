@@ -1,7 +1,7 @@
 package com.idkidknow.mcreallink.lib
 
-import cats.effect.kernel.Resource
 import cats.effect.kernel.MonadCancel
+import cats.effect.kernel.Resource
 import cats.syntax.all.*
 
 /** Mark the behavior that leak a `Resource` */
