@@ -29,25 +29,16 @@ object MinecraftImpl extends Minecraft {
     }
   }
   override val Language: MinecraftImpl.LanguageClass = new LanguageClass {
-    override def get(language: String => Option[String], key: String): Option[String] =
-      language(key)
     override def make(map: String => Option[String]): Language = map
-    override def classLoaderResourceStream(path: String): InputStream =
-      classOf[StringTranslate].getResourceAsStream(path)
     override def parseLanguageFile(stream: InputStream): Option[Map[String, String]] = try {
       import scala.jdk.CollectionConverters.*
       val map = StringTranslate.parseLangFile(stream).asScala.toMap
-      println(s"2222parse:${map.get("chat.type.text")}")
       Some(map)
     } catch {
-      case _: Exception => {
-        println("333333parse failed")
-        None
-      }
+      case _: Exception => None
     }
   }
   override val MinecraftServer: MinecraftImpl.MinecraftServerClass = new MinecraftServerClass {
-    override def resourceNamespaces(server: McMinecraftServer): Iterable[String] = ???
     override def broadcastMessage(server: McMinecraftServer, message: IChatComponent): Unit =
       BroadcastingMessage.ignoreTemporarily { () =>
         server.getConfigurationManager.sendChatMsg(message)

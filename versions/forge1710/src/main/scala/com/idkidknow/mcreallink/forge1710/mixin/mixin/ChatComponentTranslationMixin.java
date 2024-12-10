@@ -29,6 +29,8 @@ public abstract class ChatComponentTranslationMixin {
 
     @Shadow @Final private Object syncLock;
 
+    @Shadow @Final private Object[] formatArgs;
+
     @Inject(method = "ensureInitialized", at = @At("HEAD"), cancellable = true)
     private void injectEnsureInitialized(CallbackInfo ci) {
         Function<String, Optional<String>> language = ServerTranslate.getInjectingLanguage();
@@ -37,20 +39,21 @@ public abstract class ChatComponentTranslationMixin {
                 synchronized (this.syncLock) {
                     this.children.clear();
                 }
-            }
-            try {
-                Optional<String> format = language.apply(this.key);
-                if (format.isPresent()) {
-                    this.initializeFromFormat(format.get());
-                } else {
+
+                try {
+                    Optional<String> format = language.apply(this.key);
+                    if (format.isPresent()) {
+                        this.initializeFromFormat(format.get());
+                    } else {
+                        this.initializeFromFormat(StatCollector.translateToFallback(this.key));
+                    }
+                } catch (ChatComponentTranslationFormatException e) {
+                    this.children.clear();
                     this.initializeFromFormat(StatCollector.translateToFallback(this.key));
                 }
-            } catch (ChatComponentTranslationFormatException e) {
-                this.children.clear();
-                this.initializeFromFormat(StatCollector.translateToFallback(this.key));
-            }
 
-            ci.cancel();
+                ci.cancel();
+            }
         }
     }
 }

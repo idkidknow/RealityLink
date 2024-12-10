@@ -9,7 +9,7 @@ plugins {
 }
 
 group = "com.idkidknow.mcreallink"
-version = "0.2.0"
+version = "0.2.0-alpha"
 
 java {
     toolchain {
@@ -74,6 +74,7 @@ val shadowJar = tasks.named<ShadowJar>("shadowJar") {
     relocate("org.typelevel", "com.idkidknow.mcreallink.shaded.org.typelevel")
     relocate("cats", "com.idkidknow.mcreallink.shaded.cats")
     minimize()
+    exclude("**/*.tasty")
 
     manifest {
         attributes(mapOf(

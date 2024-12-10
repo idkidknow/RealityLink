@@ -4,7 +4,7 @@ plugins {
 }
 
 group = "com.idkidknow.mcreallink"
-version = "0.2.0"
+version = "0.2.0-alpha"
 
 val scalaVersion = "3.5.2"
 

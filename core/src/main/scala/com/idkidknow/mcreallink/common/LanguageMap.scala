@@ -9,7 +9,6 @@ import fs2.Stream
 import fs2.io.file.Files
 import fs2.io.file.Path
 import fs2.io.file.WalkOptions
-import fs2.text
 import org.typelevel.log4cats.Logger
 
 import java.io.IOException
@@ -24,10 +23,10 @@ object LanguageMap {
     def toFunction: String => Option[String] = { key => map.get(key) }
   }
 
-  /** Noncommutative monoid. `combine(x, y)` prefer values in `y`. */
+  /** Noncommutative monoid. `combine(x, y)` prefer values in `x`. */
   given monoid: Monoid[LanguageMap] = new Monoid[LanguageMap] {
     override def empty: LanguageMap = Map.empty
-    override def combine(x: LanguageMap, y: LanguageMap): LanguageMap = x ++ y
+    override def combine(x: LanguageMap, y: LanguageMap): LanguageMap = y ++ x
   }
 
   type LanguageFileParser[F[_]] =
@@ -112,23 +111,4 @@ object LanguageMap {
           Map.empty.pure[F]
       }
   }
-}
-
-def exampleParser[F[_]: Concurrent](
-    stream: Stream[F, Byte]
-): F[Option[Map[String, String]]] = {
-  val map = stream
-    .through(text.utf8.decode)
-    .through(text.lines)
-    .mapFilter { line =>
-      line.split("=", 2) match {
-        case Array(k, v) => Some((k, v))
-        case _ => None
-      }
-    }
-    .compile
-    .fold(Map.empty[String, String]) { case (acc, (k, v)) =>
-      acc.updated(k, v)
-    }
-  map.map(Some(_))
 }

@@ -7,7 +7,7 @@ import cats.syntax.all.*
 import com.idkidknow.mcreallink.minecraft.Minecraft
 import com.idkidknow.mcreallink.server.RealityLinkServerConfig
 import com.idkidknow.mcreallink.server.TlsConfig
-import com.idkidknow.mcreallink.utils.LanguageMap
+import com.idkidknow.mcreallink.common.LanguageMap
 import com.idkidknow.mcreallink.utils.decodeToml
 import de.lhns.fs2.compress.Unarchiver
 import fs2.io.file.Files
@@ -15,6 +15,8 @@ import fs2.io.file.Path
 import org.typelevel.log4cats.Logger
 
 import java.io.IOException
+import java.util.zip.ZipEntry
+import cats.kernel.Monoid
 
 final case class ModConfig(
     serverConfig: RealityLinkServerConfig,
@@ -32,7 +34,7 @@ final case class ServerToml(
     host: Option[String],
     port: Int,
     localeCode: String,
-    resourcePackDir: String,
+    resourcePackDirs: List[String],
     autoStart: Boolean,
     certChain: Option[String],
     privateKey: Option[String],
@@ -44,7 +46,7 @@ object ModConfig {
       serverToml: ServerToml,
       server: mc.MinecraftServer,
   )(using
-      Unarchiver[F, Option, ?]
+      Unarchiver[F, Option, ZipEntry]
   ): F[Either[ConfigReadingException, ModConfig]] = {
     type FE[A] = EitherT[F, ConfigReadingException, A]
 
@@ -53,7 +55,8 @@ object ModConfig {
     val certChain = serverToml.certChain.map(configDirectory.resolve)
     val privateKey = serverToml.privateKey.map(configDirectory.resolve)
     val root = serverToml.root.map(configDirectory.resolve(_))
-    val resourcePackDir = gameRootDirectory.resolve(serverToml.resourcePackDir)
+    val resourcePackDirs =
+      serverToml.resourcePackDirs.map(gameRootDirectory.resolve(_))
 
     val tlsConfig: FE[TlsConfig] =
       (certChain, privateKey, root) match {
@@ -73,20 +76,39 @@ object ModConfig {
           )
       }
 
+    def languageFileParser(
+        stream: fs2.Stream[F, Byte]
+    ): F[Option[Map[String, String]]] = {
+      val jStream = stream.through(fs2.io.toInputStream)
+      jStream
+        .map { in =>
+          mc.Language.parseLanguageFile(in)
+        }
+        .compile
+        .onlyOrError
+    }
+
     val language: FE[String => Option[String]] = EitherT.right {
-      // val fallback = LanguageMap.fromServer(server, serverToml.localeCode)
       val fallback = LanguageMap(Map.empty).pure[F]
-      val resourcePack = LanguageMap.fromResourcePackDirectory(
-        resourcePackDir,
-        serverToml.localeCode,
-      )
+      val resourcePack = resourcePackDirs.map { dir =>
+        LanguageMap.fromArchiveDirectory(
+          dir,
+          languageFileParser,
+          show"${serverToml.localeCode}.lang",
+          1,
+        )
+      }.sequence.map(Monoid[LanguageMap].combineAll(_))
       (fallback, resourcePack).parMapN { (fallback, resourcePack) =>
         fallback.combine(resourcePack).toFunction
       }
     }
     (tlsConfig, language).mapN { (tlsConfig, language) =>
       val realityLinkServerConfig =
-        RealityLinkServerConfig(serverToml.host.getOrElse("0.0.0.0"), serverToml.port, tlsConfig)
+        RealityLinkServerConfig(
+          serverToml.host.getOrElse("0.0.0.0"),
+          serverToml.port,
+          tlsConfig,
+        )
       ModConfig(realityLinkServerConfig, language, serverToml.autoStart)
     }.value
   }
@@ -94,11 +116,12 @@ object ModConfig {
   def fromConfigFile[F[_]: Async: Logger: Files](using mc: Minecraft)(
       server: mc.MinecraftServer
   )(using
-      Unarchiver[F, Option, ?]
+      Unarchiver[F, Option, ZipEntry]
   ): F[Either[ConfigReadingException, ModConfig]] = {
     type FE[A] = EitherT[F, ConfigReadingException, A]
 
-    val serverTomlPath = Path.fromNioPath(mc.configDirectory) / "reallink" / "server.toml"
+    val serverTomlPath =
+      Path.fromNioPath(mc.configDirectory) / "reallink" / "server.toml"
     val serverTomlString: FE[String] = EitherT(
       Files[F]
         .readUtf8(serverTomlPath)

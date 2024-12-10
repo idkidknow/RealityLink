@@ -13,7 +13,7 @@ public class ServerConfigurationManagerMixin {
     @Inject(method = "sendChatMsgImpl", at = @At("HEAD"))
     private void getBroadcastingMessage(IChatComponent component, boolean isChat, CallbackInfo ci) {
         if (!BroadcastingMessage.ignoreMessage()) {
-            BroadcastingMessage.callback().apply(component);
+            BroadcastingMessage.getCallback().accept(component);
         }
     }
 }

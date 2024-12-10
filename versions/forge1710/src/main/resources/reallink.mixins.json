@@ -4,6 +4,7 @@
   "package": "com.idkidknow.mcreallink.forge1710.mixin.mixin",
   "compatibilityLevel": "JAVA_8",
   "mixins": [
+    "ChatComponentTextMixin",
     "ChatComponentTranslationMixin",
     "ServerConfigurationManagerMixin"
   ],

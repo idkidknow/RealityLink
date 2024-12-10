@@ -22,6 +22,7 @@ import fs2.Stream
 import fs2.io.file.Files
 import org.typelevel.log4cats.Logger
 import org.typelevel.log4cats.LoggerFactory
+import java.util.zip.ZipEntry
 
 def entry(mc: Minecraft, loggerFactory: LoggerFactory[IO]): Unit = {
   given Minecraft = mc
@@ -95,7 +96,7 @@ def onServerStarting[F[_]: Async: LoggerFactory: Files](using
     callingStopCommand: CallbackBundle[F, Unit, Unit],
 ): F[Unit] = {
   given logger: Logger[F] = LoggerFactory[F].getLogger
-  given Unarchiver[F, Option, ?] = ZipUnarchiver.make[F]()
+  given Unarchiver[F, Option, ZipEntry] = ZipUnarchiver.make[F]()
 
   type RunningServer = Fiber[F, Throwable, Nothing]
 

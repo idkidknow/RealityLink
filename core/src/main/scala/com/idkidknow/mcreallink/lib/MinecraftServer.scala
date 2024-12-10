@@ -20,11 +20,11 @@ object MinecraftServer {
       serverStopping: CallbackBundle[F, ?, Unit],
   ): Stream[F, (MS, Supervisor[F])] = {
     def makeSupervisor(ms: MS): F[(MS, Supervisor[F])] =
-      Supervisor[F].allocated.map { case (supervisor, finalizer) =>
-        serverStopping.registerRunOnce { _ =>
+      Supervisor[F].allocated.flatMap { case (supervisor, finalizer) =>
+        val registerFinalizer = serverStopping.registerRunOnce { _ =>
           finalizer
         }
-        (ms, supervisor)
+        registerFinalizer *> (ms, supervisor).pure[F]
       }
 
     val s: Stream[F, MS] = serverStarting.registerAsStream(Queue.synchronous)

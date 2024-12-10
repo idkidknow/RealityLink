@@ -22,17 +22,12 @@ trait Minecraft {
   }
 
   trait LanguageClass {
-    def get(language: Language, key: String): Option[String]
     def make(map: String => Option[String]): Language
-    /** `Language.getClassLoader().getResourceAsStream(path)` */
-    def classLoaderResourceStream(path: String): InputStream
     /** `.lang` before 1.13 and `.json` after 1.13 */
     def parseLanguageFile(stream: InputStream): Option[Map[String, String]]
   }
 
   trait MinecraftServerClass {
-    /** `.getResourceManager().getNamespaces()` */
-    def resourceNamespaces(server: MinecraftServer): Iterable[String]
     def broadcastMessage(server: MinecraftServer, message: Component): Unit
   }
 
