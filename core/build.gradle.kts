@@ -37,4 +37,6 @@ dependencies {
     implementation("com.softwaremill.sttp.tapir:tapir-core_3:1.11.9")
     implementation("com.softwaremill.sttp.tapir:tapir-json-circe_3:1.11.9")
     implementation("com.softwaremill.sttp.tapir:tapir-netty-server-cats_3:1.11.9")
+    implementation("org.http4s:http4s-netty-client_3:0.5.21")
+    implementation("org.http4s:http4s-circe_3:0.23.30")
 }

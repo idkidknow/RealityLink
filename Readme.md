@@ -2,6 +2,14 @@
 
 A neat Minecraft in-game chat interacting API with server-side l10n support, suitable for chatbots.
 
+## Getting Started
+
+1. Download the mod and put it into your `mods` folder.
+2. Restart your Minecraft server.
+3. Run the command `/reallink download` to download vanilla language assets from Mojang.
+4. Check and alter the config file `config/reallink/server.toml`. For details, see [Configuration](#configuration).
+5. Run the command `/reallink start` to start the WebSocket server.
+
 ## Usage
 
 This mod runs on a Minecraft server and
@@ -20,40 +28,45 @@ to broadcast a rich message in the game.
 
 Minecraft server don't hold redundant l10n resources
 which are thought to be at client-side. If you have some resource packs
-inside which language resources
+or mods' jar files inside which language resources
 (files like `/assets/{namespace}/lang/{locale_code}.json`) exists,
-create a folder and copy all these resource packs into it.
+create a folder and copy all these packs into it.
 
 Under normal circumstances,
-minecraft server don't have language files for vanilla contents
-other than `en_us.json`. For users that speak other languages,
-download Minecraft's language resources `assets/minecraft/lang/*.json`
-on https://mcasset.cloud/, create a zip file of the `assets` folder.
-Now the zip archive is virtually a resource pack
-(without metadata `pack.mcmeta`. It doesn't matter.) so simply do the
-things that the previous paragraph tells you to do.
+minecraft server don't have language files for vanilla contents.
+It is required to download Minecraft's language resources
+`assets/minecraft/lang/*.json`, create a zip file of
+the `assets` folder and then the zip archive is virtually a resource pack
+(without metadata `pack.mcmeta`. It doesn't matter.)
+All these steps above can be done by a single command `/reallink download`
+result in `serverlang/vanilla.zip`.
 
 ### Configuration
 
 create a toml file `config/reallink/server.toml`:
+
 ```toml
+host = "0.0.0.0"
 port = 39244
 localeCode = "en_us"
-resourcePackDir = "serverlang"
+resourcePackDirs = ["mods", "serverlang"]
 autoStart = true
 ```
 
 - `port`: The port server listens
-- `localeCode`: See https://minecraft.wiki/w/Language
-- `resourcePacksDir`: The folder where resource packs are stored.
+- `localeCode`: See [wiki](https://minecraft.wiki/w/Language)
+- `resourcePacksDirs`: Folders where resource packs are stored.
 Absolute path, or relative to the Minecraft game's root path
-(where the game's jar file is)
+(commonly the parent of `mods`, `config`, etc.). It is
+recommended to include `mods` and `serverlang` folder so that
+language files in mods and vanilla Minecraft can be loaded.
 - `autoStart`: Start the API server automatically
-when Minecraft server starting
+when Minecraft server starting.
 
-#### TLS/mTLS
+#### TLS/mTLS (optional)
 
 Append these lines in `server.toml`:
+
 ```toml
 certChain = "server_cert.pem"
 privateKey = "server_pkcs8.key"
@@ -61,10 +74,11 @@ privateKey = "server_pkcs8.key"
 ```
 
 Absolute path, or relative to `config/reallink/`
+
 - `certChain`: The server's certificate chain
 - `privateKey`: The private key in PKCS #8 format
 - optional `root`: Trusted root certificates, used to verify
-certificates of clients. 
+certificates of clients.
 Use normal TLS if not provided, otherwise enable mutual TLS.
 
 ### Launch

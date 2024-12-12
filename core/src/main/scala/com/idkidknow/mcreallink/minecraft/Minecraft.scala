@@ -23,8 +23,10 @@ trait Minecraft {
 
   trait LanguageClass {
     def make(map: String => Option[String]): Language
-    /** `.lang` before 1.13 and `.json` after 1.13 */
+    /** `.lang` format before 1.13 and `.json` format after 1.13 */
     def parseLanguageFile(stream: InputStream): Option[Map[String, String]]
+    /** `"lang"` before 1.13 and `"json"` after 1.13 */
+    def languageFileExtension: String
   }
 
   trait MinecraftServerClass {
@@ -38,12 +40,13 @@ trait Minecraft {
 
   trait Events {
     /** `ServerstartingEvent`, `ServerLifecycleEvents.SERVER_STARTING` */
-    def onServerStarting(action: MinecraftServer => Unit): Unit
+    def setOnServerStarting(action: MinecraftServer => Unit): Unit
     /** `ServerstoppingEvent`, `ServerLifecycleEvents.SERVER_STOPPING` */
-    def onServerStopping(action: MinecraftServer => Unit): Unit
+    def setOnServerStopping(action: () => Unit): Unit
 
     def setOnCallingStartCommand(action: () => Either[Throwable, Unit]): Unit
     def setOnCallingStopCommand(action: () => Unit): Unit
+    def setOnCallingDownloadCommand(action: () => Unit): Unit
     def setOnBroadcastingMessage(action: Component => Unit): Unit
   }
 
@@ -52,4 +55,5 @@ trait Minecraft {
 
   def gameRootDirectory: Path
   def configDirectory: Path
+  def minecraftVersion: String
 }

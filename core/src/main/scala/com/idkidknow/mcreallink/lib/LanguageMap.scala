@@ -1,4 +1,4 @@
-package com.idkidknow.mcreallink.common
+package com.idkidknow.mcreallink.lib
 
 import cats.Apply
 import cats.effect.Concurrent
@@ -13,6 +13,9 @@ import org.typelevel.log4cats.Logger
 
 import java.io.IOException
 import java.util.zip.ZipEntry
+import com.idkidknow.mcreallink.minecraft.Minecraft
+import java.io.InputStream
+import cats.effect.kernel.Async
 
 opaque type LanguageMap = Map[String, String]
 
@@ -31,6 +34,16 @@ object LanguageMap {
 
   type LanguageFileParser[F[_]] =
     Stream[F, Byte] => F[Option[Map[String, String]]]
+
+  object LanguageFileParser {
+    def fromMinecraft[F[_]: Async](using mc: Minecraft): LanguageFileParser[F] = { stream =>
+      val jStream: Stream[F, InputStream] = stream.through(fs2.io.toInputStream)
+      jStream
+        .map(mc.Language.parseLanguageFile)
+        .compile
+        .onlyOrError
+    }
+  }
 
   /** Reads a language map from a zip archive (zip or jar, like resource packs
    *  or mod jars). Reads specified .json/.lang files in

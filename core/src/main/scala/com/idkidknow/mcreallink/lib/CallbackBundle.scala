@@ -1,4 +1,4 @@
-package com.idkidknow.mcreallink.utils
+package com.idkidknow.mcreallink.lib
 
 import cats.Apply
 import cats.Semigroup

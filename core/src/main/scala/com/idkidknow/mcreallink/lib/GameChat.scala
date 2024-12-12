@@ -3,7 +3,6 @@ package com.idkidknow.mcreallink.lib
 import cats.effect.kernel.Async
 import cats.effect.std.Queue
 import com.idkidknow.mcreallink.minecraft.Minecraft
-import com.idkidknow.mcreallink.utils.CallbackBundle
 import fs2.Stream
 
 trait GameChat[F[_]] {

@@ -4,7 +4,6 @@ import cats.effect.Concurrent
 import cats.effect.std.Queue
 import cats.effect.std.Supervisor
 import cats.syntax.all.*
-import com.idkidknow.mcreallink.utils.CallbackBundle
 import fs2.Stream
 
 object MinecraftServer {

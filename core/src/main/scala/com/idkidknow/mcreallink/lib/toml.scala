@@ -1,4 +1,4 @@
-package com.idkidknow.mcreallink.utils
+package com.idkidknow.mcreallink.lib
 
 import cats.syntax.all.*
 import io.circe.Decoder
