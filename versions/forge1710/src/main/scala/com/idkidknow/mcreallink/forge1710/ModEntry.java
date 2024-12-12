@@ -10,7 +10,7 @@ import net.minecraft.server.MinecraftServer;
 import java.nio.file.Path;
 
 @SuppressWarnings("unused")
-@Mod(modid = "reallink", version = "0.2.0-alpha", name = "RealityLink", acceptableRemoteVersions = "*", dependencies = "required-after:scala3std")
+@Mod(modid = "reallink", version = "0.2.0-alpha", name = "RealityLink", acceptableRemoteVersions = "*")
 public class ModEntry {
     public static Path configDirectory = null;
 

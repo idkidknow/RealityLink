@@ -8,6 +8,6 @@
     "url": "https://github.com/idkidknow/RealityLink",
     "credits": "",
     "authorList": ["idkana"],
-    "dependencies": ["scala3std"]
+    "dependencies": []
   }
 ]

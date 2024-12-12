@@ -67,9 +67,9 @@ dependencies {
 val shadowJar = tasks.named<ShadowJar>("shadowJar") {
     configurations = listOf(shade)
     relocate("scala", "scala3")
-    dependencies {
-        exclude(dependency("org.scala-lang:.*"))
-    }
+//    dependencies {
+//        exclude(dependency("org.scala-lang:.*"))
+//    }
 
     relocate("org.typelevel", "com.idkidknow.mcreallink.shaded.org.typelevel")
     relocate("cats", "com.idkidknow.mcreallink.shaded.cats")
