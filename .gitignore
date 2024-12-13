@@ -1,6 +1,6 @@
 .gradle/
 .kotlin/
-build
+build/
 .idea/
 run/
 *.log
@@ -10,3 +10,4 @@ target/
 .metals/
 bin/
 *.code-workspace
+.settings/
