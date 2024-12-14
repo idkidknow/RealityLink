@@ -26,7 +26,7 @@ dependencies {
     scalaCompilerPlugins("org.wartremover:wartremover_$scalaVersion:3.2.5")
 
     implementation("org.typelevel:cats-effect_3:3.5.5")
-    api("org.typelevel:log4cats-core_3:2.7.0")
+    implementation("org.typelevel:log4cats-slf4j_3:2.7.0")
     implementation("com.indoorvivants:toml_3:0.3.0-M2")
     implementation("io.circe:circe-core_3:0.14.10")
     implementation("io.circe:circe-generic_3:0.14.10")

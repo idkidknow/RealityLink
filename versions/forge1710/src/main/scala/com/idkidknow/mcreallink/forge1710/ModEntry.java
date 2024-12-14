@@ -32,6 +32,6 @@ public class ModEntry {
 
     @Mod.EventHandler
     public void serverStopping(FMLServerStoppingEvent event) {
-        LifecycleEvents.serverStoppingCallback().apply(MinecraftServer.getServer());
+        LifecycleEvents.serverStoppingCallback().apply();
     }
 }

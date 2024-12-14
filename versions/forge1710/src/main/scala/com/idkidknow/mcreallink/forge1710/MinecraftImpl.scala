@@ -37,6 +37,7 @@ object MinecraftImpl extends Minecraft {
     } catch {
       case _: Exception => None
     }
+    override def languageFileExtension: String = "lang"
   }
   override val MinecraftServer: MinecraftImpl.MinecraftServerClass = new MinecraftServerClass {
     override def broadcastMessage(server: McMinecraftServer, message: IChatComponent): Unit =
@@ -45,11 +46,11 @@ object MinecraftImpl extends Minecraft {
       }
   }
   override val events: MinecraftImpl.Events = new Events {
-    override def onServerStarting(action: McMinecraftServer => Unit): Unit = {
+    override def setOnServerStarting(action: McMinecraftServer => Unit): Unit = {
       LifecycleEvents.serverStartingCallback = action
     }
 
-    override def onServerStopping(action: McMinecraftServer => Unit): Unit = {
+    override def setOnServerStopping(action: () => Unit): Unit = {
       LifecycleEvents.serverStoppingCallback = action
     }
 
@@ -69,11 +70,20 @@ object MinecraftImpl extends Minecraft {
       }
     }
 
+    override def setOnCallingDownloadCommand(action: () => Unit): Unit = {
+      ModCommand.getInstance().setDownloadAction { sender =>
+        action()
+        sender.addChatMessage(ChatComponentText("start to download..."))
+      }
+    }
+
     override def setOnBroadcastingMessage(action: IChatComponent => Unit): Unit = {
       BroadcastingMessage.callback = action
     }
   }
 
-  override def gameRootDirectory: Path = java.io.File(".").toPath
+  override def gameRootDirectory: Path = java.io.File(".").toPath.toAbsolutePath
   override def configDirectory: Path = ModEntry.configDirectory
+
+  override def minecraftVersion: String = "1.7.10"
 }

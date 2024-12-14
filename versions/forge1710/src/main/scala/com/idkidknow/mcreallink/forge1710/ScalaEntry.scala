@@ -6,7 +6,7 @@ import org.apache.logging.log4j.{LogManager, ThreadContext}
 
 object ScalaEntry {
   def init(): Unit = {
-    com.idkidknow.mcreallink.entry(MinecraftImpl, SimpleLoggerFactory())
+    com.idkidknow.mcreallink.ModInit.entry(MinecraftImpl, SimpleLoggerFactory())
   }
 }
 

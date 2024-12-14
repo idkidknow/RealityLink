@@ -20,6 +20,10 @@ public class ModCommand extends CommandBase {
     public void setStopAction(Consumer<ICommandSender> action) {
         this.stopAction = action;
     }
+    private Consumer<ICommandSender> downloadAction = (sender) -> {};
+    public void setDownloadAction(Consumer<ICommandSender> action) {
+        this.downloadAction = action;
+    }
 
     @Override
     public String getCommandName() {
@@ -28,7 +32,7 @@ public class ModCommand extends CommandBase {
 
     @Override
     public String getCommandUsage(ICommandSender sender) {
-        return "/reallink start\n/reallink stop";
+        return "/reallink start\n/reallink stop\n/reallink download";
     }
 
     @Override
@@ -38,6 +42,8 @@ public class ModCommand extends CommandBase {
             startAction.accept(iCommandSender);
         } else if (args[0].equals("stop")) {
             stopAction.accept(iCommandSender);
+        } else if (args[0].equals("download")) {
+            downloadAction.accept(iCommandSender);
         }
     }
 
