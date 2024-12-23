@@ -30,13 +30,15 @@ tasks.named<ShadowJar>("shadowJar") {
 //        "sttp",
         "sourcecode",
         "scodec",
-        "org",
+        "org/http4s",
+        "org/playframework",
+        "org/reactivestreams",
         "magnolia1",
         "io.netty",
         "geny",
 //        "fs2",
         "fastparse",
-//        "de",
+        "de/lhns/fs2",
         "buildinfo",
     )
     for (prefix in prefixes) {

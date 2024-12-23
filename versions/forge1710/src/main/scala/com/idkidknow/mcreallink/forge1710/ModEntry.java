@@ -5,12 +5,11 @@ import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.event.FMLServerStartingEvent;
 import cpw.mods.fml.common.event.FMLServerStoppingEvent;
-import net.minecraft.server.MinecraftServer;
 
 import java.nio.file.Path;
 
 @SuppressWarnings("unused")
-@Mod(modid = "reallink", version = "0.2.0-alpha", name = "RealityLink", acceptableRemoteVersions = "*")
+@Mod(modid = "reallink", version = "0.2.0-SNAPSHOT", name = "RealityLink", acceptableRemoteVersions = "*")
 public class ModEntry {
     public static Path configDirectory = null;
 

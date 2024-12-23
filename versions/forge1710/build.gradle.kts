@@ -9,7 +9,7 @@ plugins {
 }
 
 group = "com.idkidknow.mcreallink"
-version = "0.2.0-alpha"
+version = "0.2.0-SNAPSHOT"
 
 java {
     toolchain {
@@ -27,6 +27,24 @@ tasks.withType<ScalaCompile>().configureEach {
         "-Wunused:all",
         "-P:wartremover:only-warn-traverser:org.wartremover.warts.Unsafe",
     )
+}
+
+sourceSets {
+    main {
+        java {
+            setSrcDirs(emptyList<String>())
+            // All Java and Scala code should be placed under `main/scala`, leaving `main/java` empty.
+            // Therefore, under normal circumstances, `build/classes/java/main` should not exist,
+            // for which reason the game will crash in dev mode.
+            //
+            // However, IntelliJ may commit a "crime" by silently copying files from
+            // `build/classes/scala/main` to `build/classes/java/main`. In this situation,
+            // FML will complain about finding duplicate mods in dev mode.
+            //
+            // Solve the problems above by changing the destinationDirectory
+            destinationDirectory = file(project.layout.buildDirectory.dir("classes/scala/main"))
+        }
+    }
 }
 
 repositories {
@@ -64,15 +82,22 @@ dependencies {
     implementation("org.typelevel:log4cats-core_3:2.7.0".also { shade(it) })
 }
 
+tasks.processResources {
+    filesMatching("mcmod.info") {
+        expand("version" to version)
+    }
+}
+
 val shadowJar = tasks.named<ShadowJar>("shadowJar") {
     configurations = listOf(shade)
-    relocate("scala", "scala3")
+    relocate("scala", "com.idkidknow.mcreallink.shaded.scala")
 //    dependencies {
 //        exclude(dependency("org.scala-lang:.*"))
 //    }
 
     relocate("org.typelevel", "com.idkidknow.mcreallink.shaded.org.typelevel")
     relocate("cats", "com.idkidknow.mcreallink.shaded.cats")
+    relocate("org.slf4j", "com.idkidknow.mcreallink.shaded.org.slf4j")
     minimize()
     exclude("**/*.tasty")
 

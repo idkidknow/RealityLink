@@ -30,6 +30,11 @@ object ModInit {
     init[IO].unsafeRunSync()
   }
 
+  def entryWithSlf4j(mc: Minecraft): Unit = {
+    import org.typelevel.log4cats.slf4j.Slf4jFactory
+    entry(mc, Slf4jFactory.create[IO])
+  }
+
   def init[F[_]: Async: Leak: LoggerFactory: Files](using
       mc: Minecraft
   ): F[Unit] = {

@@ -2,7 +2,7 @@
   {
     "modid": "reallink",
     "name": "RealityLink",
-    "version": "0.2.0-alpha",
+    "version": "${version}",
     "mcversion": "1.7.10",
     "description": "111",
     "url": "https://github.com/idkidknow/RealityLink",
