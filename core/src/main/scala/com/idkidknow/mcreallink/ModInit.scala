@@ -11,7 +11,7 @@ import com.idkidknow.mcreallink.lib.CallbackBundle
 import com.idkidknow.mcreallink.lib.Leak
 import com.idkidknow.mcreallink.lib.MinecraftServer
 import com.idkidknow.mcreallink.lib.ServerToml
-import com.idkidknow.mcreallink.minecraft.Minecraft
+import com.idkidknow.mcreallink.api.Minecraft
 import fs2.Stream
 import fs2.io.file.Files
 import fs2.io.file.Path

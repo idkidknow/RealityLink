@@ -1,6 +1,6 @@
 @file:Suppress("UnstableApiUsage")
 
-rootProject.name = "reallink-core"
+rootProject.name = "reallink-core-api"
 
 pluginManagement {
     repositories {
@@ -18,5 +18,3 @@ dependencyResolutionManagement {
 plugins {
     id("org.gradle.toolchains.foojay-resolver-convention") version("0.8.0")
 }
-
-includeBuild("../core-api")

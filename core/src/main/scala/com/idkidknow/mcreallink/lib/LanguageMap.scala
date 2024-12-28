@@ -13,7 +13,7 @@ import org.typelevel.log4cats.Logger
 
 import java.io.IOException
 import java.util.zip.ZipEntry
-import com.idkidknow.mcreallink.minecraft.Minecraft
+import com.idkidknow.mcreallink.api.Minecraft
 import java.io.InputStream
 import cats.effect.kernel.Async
 

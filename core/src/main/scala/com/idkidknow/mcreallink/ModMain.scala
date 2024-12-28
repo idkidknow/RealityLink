@@ -10,7 +10,7 @@ import com.idkidknow.mcreallink.lib.AssetDownload
 import com.idkidknow.mcreallink.lib.CallbackBundle
 import com.idkidknow.mcreallink.lib.GameChat
 import com.idkidknow.mcreallink.lib.ModConfig
-import com.idkidknow.mcreallink.minecraft.Minecraft
+import com.idkidknow.mcreallink.api.Minecraft
 import com.idkidknow.mcreallink.server.ChatInterface
 import com.idkidknow.mcreallink.server.RealityLinkServer
 import de.lhns.fs2.compress.Archiver

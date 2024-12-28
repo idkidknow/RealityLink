@@ -7,7 +7,7 @@ import cats.effect.kernel.Concurrent
 import cats.kernel.Monoid
 import cats.syntax.all.*
 import com.idkidknow.mcreallink.lib.LanguageMap.LanguageFileParser
-import com.idkidknow.mcreallink.minecraft.Minecraft
+import com.idkidknow.mcreallink.api.Minecraft
 import com.idkidknow.mcreallink.server.RealityLinkServerConfig
 import com.idkidknow.mcreallink.server.TlsConfig
 import com.idkidknow.mcreallink.lib.decodeToml

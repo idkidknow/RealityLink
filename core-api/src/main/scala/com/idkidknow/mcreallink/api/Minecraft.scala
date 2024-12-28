@@ -1,4 +1,4 @@
-package com.idkidknow.mcreallink.minecraft
+package com.idkidknow.mcreallink.api
 
 import java.io.InputStream
 import java.nio.file.Path
