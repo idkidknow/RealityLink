@@ -68,17 +68,24 @@ object ModInit {
   }
 
   @SuppressWarnings(Array("org.wartremover.warts.Any"))
-  private def createDefaultServerToml[F[_]: Concurrent: Files](path: Path): F[Unit] = {
+  private def createDefaultServerToml[F[_]: Concurrent: Files](
+      path: Path
+  ): F[Unit] = {
     Files[F]
       .exists(path)
       .ifM(
         ifTrue = ().pure[F],
-        ifFalse = Stream
-          .emit(ServerToml.defaultTomlString)
-          .through(fs2.text.utf8.encode)
-          .through(Files[F].writeAll(path))
-          .compile
-          .drain,
+        ifFalse = {
+          path.parent
+            .map(parent => Files[F].createDirectories(parent))
+            .getOrElse(().pure[F]) >>
+            Stream
+              .emit(ServerToml.defaultTomlString)
+              .through(fs2.text.utf8.encode)
+              .through(Files[F].writeAll(path))
+              .compile
+              .drain
+        },
       )
   }
 

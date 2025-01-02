@@ -22,4 +22,4 @@ plugins {
 rootProject.name = "reallink-forge1182"
 
 includeBuild("../../core")
-include("shade")
+include("impl")

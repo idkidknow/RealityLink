@@ -1,4 +1,4 @@
-package com.idkidknow.mcreallink.forge1182
+package com.idkidknow.mcreallink.forge1182.core
 
 import net.minecraft.commands.Commands
 import net.minecraft.network.chat.TextComponent

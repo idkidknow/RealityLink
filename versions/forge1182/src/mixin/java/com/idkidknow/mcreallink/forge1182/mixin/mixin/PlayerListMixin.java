@@ -17,12 +17,12 @@ import java.util.function.Function;
 public abstract class PlayerListMixin {
     @Inject(method = "broadcastMessage(Lnet/minecraft/network/chat/Component;Lnet/minecraft/network/chat/ChatType;Ljava/util/UUID;)V", at = @At("RETURN"))
     private void getMessageToBroadcast(Component message, ChatType chatType, UUID uuid, CallbackInfo ci) {
-        if (BroadcastingMessage.ignoreMessage()) return;
-        BroadcastingMessage.callback().apply(message);
+        if (BroadcastingMessage.isIgnoreMessage()) return;
+        BroadcastingMessage.getCallback().accept(message);
     }
     @Inject(method = "broadcastMessage(Lnet/minecraft/network/chat/Component;Ljava/util/function/Function;Lnet/minecraft/network/chat/ChatType;Ljava/util/UUID;)V", at = @At("RETURN"))
     private void getMessageToBroadcast(Component message, Function<ServerPlayer, Component> f, ChatType chatType, UUID uuid, CallbackInfo ci) {
-        if (BroadcastingMessage.ignoreMessage()) return;
-        BroadcastingMessage.callback().apply(message);
+        if (BroadcastingMessage.isIgnoreMessage()) return;
+        BroadcastingMessage.getCallback().accept(message);
     }
 }

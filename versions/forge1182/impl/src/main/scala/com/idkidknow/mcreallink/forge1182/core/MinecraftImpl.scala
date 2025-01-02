@@ -1,7 +1,7 @@
-package com.idkidknow.mcreallink.forge1182
+package com.idkidknow.mcreallink.forge1182.core
 
 import com.idkidknow.mcreallink.forge1182.mixin.complement.{BroadcastingMessage, ServerTranslate}
-import com.idkidknow.mcreallink.minecraft.Minecraft
+import com.idkidknow.mcreallink.api.Minecraft
 import net.minecraft.network.chat.{ChatType, FormattedText, TextComponent}
 import net.minecraft.util.FormattedCharSequence
 import net.minecraftforge.common.MinecraftForge
@@ -34,7 +34,8 @@ object MinecraftImpl extends Minecraft {
 
   override val Language: LanguageClass = new LanguageClass {
     override def make(map: String => Option[String]): Language = new Language {
-      override def getOrDefault(s: String): String = map(s).getOrElse(s)
+      private val fallback: Language = net.minecraft.locale.Language.getInstance()
+      override def getOrDefault(s: String): String = map(s).getOrElse(fallback.getOrDefault(s))
       override def has(s: String): Boolean = map(s).nonEmpty
       override def isDefaultRightToLeft: Boolean = false
       override def getVisualOrder(formattedText: FormattedText): FormattedCharSequence =
@@ -80,7 +81,7 @@ object MinecraftImpl extends Minecraft {
     override def setOnCallingDownloadCommand(action: () => Unit): Unit =
       InitCommands.downloadAction = action
     override def setOnBroadcastingMessage(action: Component => Unit): Unit =
-      BroadcastingMessage.callback = action
+      BroadcastingMessage.setCallback(component => action(component))
   }
 
   override def gameRootDirectory: Path = FMLPaths.GAMEDIR.get()

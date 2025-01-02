@@ -103,21 +103,18 @@ object ModConfig {
       }
 
     val language: FE[String => Option[String]] = EitherT.right {
-      val fallback = LanguageMap(Map.empty).pure[F]
       val resourcePack = resourcePackDirs
         .map { dir =>
           LanguageMap.fromArchiveDirectory(
             dir,
             languageFileParser,
-            show"${serverToml.localeCode}.${languageFileExtension}",
+            show"${serverToml.localeCode}.$languageFileExtension",
             1,
           )
         }
-        .sequence
+        .parSequence
         .map(Monoid[LanguageMap].combineAll(_))
-      (fallback, resourcePack).parMapN { (fallback, resourcePack) =>
-        fallback.combine(resourcePack).toFunction
-      }
+      resourcePack.map(_.toFunction)
     }
     (tlsConfig, language).mapN { (tlsConfig, language) =>
       val realityLinkServerConfig =

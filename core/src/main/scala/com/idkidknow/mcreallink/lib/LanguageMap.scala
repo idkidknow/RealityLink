@@ -36,7 +36,9 @@ object LanguageMap {
     Stream[F, Byte] => F[Option[Map[String, String]]]
 
   object LanguageFileParser {
-    def fromMinecraft[F[_]: Async](using mc: Minecraft): LanguageFileParser[F] = { stream =>
+    def fromMinecraft[F[_]: Async](using
+        mc: Minecraft
+    ): LanguageFileParser[F] = { stream =>
       val jStream: Stream[F, InputStream] = stream.through(fs2.io.toInputStream)
       jStream
         .map(mc.Language.parseLanguageFile)
@@ -82,8 +84,8 @@ object LanguageMap {
       .compile
       .foldMonoid(using monoid)
       .map(Some(_))
-      .recoverWith { case _: IOException =>
-        None.pure[F]
+      .recoverWith { case e: IOException =>
+        Logger[F].warn(e)("Error reading archive") *> None.pure[F]
       }
   }
 
@@ -111,7 +113,7 @@ object LanguageMap {
       }
     }
 
-    Files[F]
+    Logger[F].info(show"Finding language files in $directoryPath") *> Files[F]
       .walk(directoryPath, WalkOptions.Default.withMaxDepth(maxDepth))
       .filter(path => path.extName === ".zip" || path.extName === ".jar")
       .flatMap { path =>

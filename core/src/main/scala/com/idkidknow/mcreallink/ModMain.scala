@@ -110,12 +110,12 @@ object ModMain {
     def registerDownloadCommand: F[Unit] = {
       val callback: Unit => F[Unit] = { _ =>
         val download = NettyClientBuilder[F].resource.use { client =>
-          val target = Path.fromNioPath(
-            mc.gameRootDirectory
-          ) / "serverlang" / "vanilla.zip"
+          val parentPath = Path.fromNioPath(mc.gameRootDirectory) / "serverlang"
+          val createParent: F[Unit] = Files[F].createDirectories(parentPath)
+          val target = parentPath / "vanilla.zip"
           given Archiver[F, Option] = ZipArchiver.makeDeflated()
-          AssetDownload
-            .downloadLanguageAssets(mc.minecraftVersion, Path("."), client)
+          createParent >> AssetDownload
+            .downloadLanguageAssets(mc.minecraftVersion, target, client)
             .flatMap {
               case Right(_) =>
                 logger.info(

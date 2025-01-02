@@ -159,7 +159,7 @@ object AssetDownload {
         .walk(assetDir)
         .evalFilter(Files[F].isRegularFile(_))
         .evalMap { file =>
-          val name = dir.relativize(file).toString
+          val name = dir.relativize(file).toString.replace('\\', '/')
           Files[F].size(file).map { size =>
             ArchiveEntry(name, Some(size)) -> Files[F].readAll(file)
           }
