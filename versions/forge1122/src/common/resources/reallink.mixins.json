@@ -1,0 +1,16 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "com.idkidknow.mcreallink.forge1122.mixin.mixin",
+  "compatibilityLevel": "JAVA_8",
+  "mixins": [
+    "I18nMixin",
+    "LanguageMapMixin",
+    "PlayerListMixin"
+  ],
+  "client": [],
+  "server": [],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
