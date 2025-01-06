@@ -74,15 +74,17 @@ tasks.named<ShadowJar>("shadowJar") {
     exclude("org/apache/logging/log4j/**/*")
 }
 
-tasks.register<ShadowJar>("remappedShadowJar") {
+tasks.register<ShadowJar>("remapShadowJar") {
     configurations = listOf(shade)
 
     dependsOn("remapJar")
-    from(zipTree(tasks.named<RemapJarTask>("remapJar").get().outputs.files.singleFile))
+    from(zipTree(tasks.named<RemapJarTask>("remapJar").map {it.outputs.files.singleFile }))
     archiveClassifier = "all"
     minimize()
 }
-configurations.create("remappedShadow")
+configurations.create("core")
+configurations.create("coreRemapped")
 artifacts {
-    add("remappedShadow", tasks.named<ShadowJar>("remappedShadowJar").get().archiveFile)
+    add("core", tasks.named<ShadowJar>("shadowJar").map { it.archiveFile })
+    add("coreRemapped", tasks.named<ShadowJar>("remapShadowJar").map { it.archiveFile })
 }

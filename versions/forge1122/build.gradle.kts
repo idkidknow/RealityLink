@@ -64,14 +64,14 @@ dependencies {
 
 configurations.create("common")
 artifacts {
-    add("common", tasks.named<org.gradle.jvm.tasks.Jar>("commonJar").get().archiveFile)
+    add("common", tasks.named<org.gradle.jvm.tasks.Jar>("commonJar").map { it.archiveFile })
 }
 
 val modCore: Configuration by configurations.creating
 val modCoreRemapped: Configuration by configurations.creating
 dependencies {
-    modCore(project(path = ":impl", configuration = "shadow"))
-    modCoreRemapped(project(path = ":impl", configuration = "remappedShadow"))
+    modCore(project(path = ":impl", configuration = "core"))
+    modCoreRemapped(project(path = ":impl", configuration = "coreRemapped"))
 }
 tasks.register<Copy>("copyModCore") {
     dependsOn(":impl:shadowJar")
@@ -79,7 +79,7 @@ tasks.register<Copy>("copyModCore") {
     into(layout.buildDirectory.dir("generated_core/META-INF/mod-core"))
 }
 tasks.register<Copy>("copyModCoreRemapped") {
-    dependsOn(":impl:remappedShadowJar")
+    dependsOn(":impl:remapShadowJar")
     from(zipTree(modCoreRemapped.singleFile))
     into(layout.buildDirectory.dir("generated_core_remapped/META-INF/mod-core"))
 }
@@ -102,7 +102,7 @@ tasks.jar {
 }
 tasks.register<Jar>("productJar") {
     dependsOn("remapJar")
-    from(zipTree(tasks.named<RemapJarTask>("remapJar").get().outputs.files.singleFile))
+    from(zipTree(tasks.named<RemapJarTask>("remapJar").map { it.outputs.files.singleFile }))
     dependsOn("copyModCoreRemapped")
     from(layout.buildDirectory.dir("generated_core_remapped"))
     manifest.from(tasks.jar.get().manifest)
