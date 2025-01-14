@@ -121,4 +121,3 @@ tasks.register<Jar>("productJar") {
     archiveClassifier = "product"
     exclude("**/*.tasty")
 }
-

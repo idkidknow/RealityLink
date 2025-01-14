@@ -59,32 +59,28 @@ dependencies {
 
 val shade: Configuration by configurations.creating
 dependencies {
-    shade("org.scala-lang:scala3-library_3:$scalaVersion")
     shade("com.idkidknow.mcreallink:reallink-core")
     shade("org.apache.logging.log4j:log4j-slf4j2-impl:2.24.3")
 }
 tasks.named<ShadowJar>("shadowJar") {
     configurations = listOf(shade)
 
-    archiveClassifier = "dev-all"
-
+    dependsOn("remapJar")
+    from(zipTree(tasks.named<RemapJarTask>("remapJar").map { it.outputs.files.singleFile }))
+    archiveClassifier = "all"
     minimize {
         exclude(dependency("org.apache.logging.log4j:log4j-slf4j2-impl:.*"))
     }
     exclude("org/apache/logging/log4j/**/*")
 }
 
-tasks.register<ShadowJar>("remapShadowJar") {
-    configurations = listOf(shade)
-
-    dependsOn("remapJar")
-    from(zipTree(tasks.named<RemapJarTask>("remapJar").map {it.outputs.files.singleFile }))
-    archiveClassifier = "all"
-    minimize()
-}
 configurations.create("core")
+dependencies {
+    "core"("com.idkidknow.mcreallink:reallink-core")
+    "core"("org.apache.logging.log4j:log4j-slf4j2-impl:2.24.3")
+}
 configurations.create("coreRemapped")
 artifacts {
-    add("core", tasks.named<ShadowJar>("shadowJar").map { it.archiveFile })
-    add("coreRemapped", tasks.named<ShadowJar>("remapShadowJar").map { it.archiveFile })
+    add("core", tasks.jar)
+    add("coreRemapped", tasks.named<ShadowJar>("shadowJar").map { it.archiveFile })
 }

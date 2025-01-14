@@ -55,6 +55,12 @@ public class ModLoad {
 
             @Override
             public Enumeration<URL> findResources(String name) throws IOException {
+                if (name.startsWith("META-INF/services/")) {
+                    String interfaceName = name.substring("META-INF/services/".length());
+                    if (useMine.apply(interfaceName)) {
+                        return super.findResources(name);
+                    }
+                }
                 try {
                     return mcClassLoader.getResources(name);
                 } catch (IOException ignored) {}
@@ -100,6 +106,12 @@ public class ModLoad {
 
             @Override
             protected Enumeration<URL> findResources(String name) throws IOException {
+                if (name.startsWith("META-INF/services/")) {
+                    String interfaceName = name.substring("META-INF/services/".length());
+                    if (useMine.apply(interfaceName)) {
+                        return mcClassLoader.getResources("META-INF/reallink-mod-core/" + name);
+                    }
+                }
                 try {
                     return mcClassLoader.getResources(name);
                 } catch (IOException ignored) {}

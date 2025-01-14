@@ -53,13 +53,12 @@ unimined.minecraft(sourceSets.main.get()) {
 }
 
 dependencies {
-    compileOnly(project(path = ":" , configuration = "mixin"))
+    compileOnly(project(path = ":" , configuration = "common"))
     implementation("com.idkidknow.mcreallink:reallink-core")
 }
 
 val shade: Configuration by configurations.creating
 dependencies {
-    shade("org.scala-lang:scala3-library_3:$scalaVersion")
     shade("com.idkidknow.mcreallink:reallink-core")
 }
 tasks.named<ShadowJar>("shadowJar") {
@@ -70,24 +69,18 @@ tasks.named<ShadowJar>("shadowJar") {
         exclude(dependency("org.slf4j:.*"))
     }
 
-    archiveClassifier = "dev-all"
-    minimize()
-}
-
-tasks.register<ShadowJar>("remappedShadowJar") {
-    configurations = listOf(shade)
-
-    dependencies {
-        exclude(dependency("io.netty:.*"))
-        exclude(dependency("org.slf4j:.*"))
-    }
-
     dependsOn("remapJar")
-    from(zipTree(tasks.named<RemapJarTask>("remapJar").get().outputs.files.singleFile))
+    from(zipTree(tasks.named<RemapJarTask>("remapJar").map { it.outputs.files.singleFile }))
     archiveClassifier = "all"
     minimize()
 }
-configurations.create("remappedShadow")
+
+configurations.create("core")
+dependencies {
+    "core"("com.idkidknow.mcreallink:reallink-core")
+}
+configurations.create("coreRemapped")
 artifacts {
-    add("remappedShadow", tasks.named<ShadowJar>("remappedShadowJar").get().archiveFile)
+    add("core", tasks.jar)
+    add("coreRemapped", tasks.named<ShadowJar>("shadowJar").map { it.archiveFile })
 }

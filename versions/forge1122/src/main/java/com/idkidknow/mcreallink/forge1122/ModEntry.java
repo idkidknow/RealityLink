@@ -9,11 +9,15 @@ import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 import net.minecraftforge.fml.common.event.FMLServerStoppingEvent;
 import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.lang.reflect.Method;
+import java.util.function.Function;
 
 @Mod(modid = "reallink", version = "0.2.0-SNAPSHOT", name = "RealityLink", acceptableRemoteVersions = "*")
 public class ModEntry {
+    private static final Logger logger = LogManager.getLogger(ModEntry.class);
+
     @Mod.EventHandler
     public void preInit(FMLPreInitializationEvent event) {
         Paths.configDirectory = event.getModConfigurationDirectory().toPath();
@@ -22,13 +26,24 @@ public class ModEntry {
     @Mod.EventHandler
     public void init(FMLInitializationEvent event) {
         ClassLoader parentClassLoader = ModEntry.class.getClassLoader();
-        ClassLoader cl = new ModCoreClassLoader(parentClassLoader);
+        Function<String, Boolean> useMine = name -> name.startsWith("scala")
+                || name.startsWith("io.netty")
+                || name.startsWith("org.slf4j")
+                || name.startsWith("org.apache.logging.slf4j");
+        ClassLoader cl;
+        String coreClasspathFile = System.getProperty("reallink.core.classpath");
+        if (coreClasspathFile != null) {
+            logger.info("Loading RealityLink in dev mode");
+            cl = ModLoad.developModeClassLoader(coreClasspathFile, parentClassLoader, useMine);
+        } else {
+            cl = ModLoad.productClassloader(parentClassLoader, useMine);
+        }
         try {
             Class<?> cls = cl.loadClass("com.idkidknow.mcreallink.forge1122.core.ScalaEntry");
             Method method = cls.getMethod("entry");
             method.invoke(null);
         } catch (Exception e) {
-            LogManager.getLogger(ModEntry.class).error("Failed to load RealityLink", e);
+            logger.error("Failed to load RealityLink", e);
         }
     }
 

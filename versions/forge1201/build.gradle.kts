@@ -76,6 +76,7 @@ dependencies {
 tasks.register("writeModCoreClasspath") {
     dependsOn(modCore)
     outputs.files("run/mod-core-classpath.txt")
+    outputs.upToDateWhen { false }
     doLast {
         val text = modCore.resolve().map { it.absolutePath.toString() }.reduce { a, b -> "$a\n$b" }
         file("run/mod-core-classpath.txt").writeText(text)
