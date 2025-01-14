@@ -36,6 +36,17 @@ unimined.minecraft(sourceSets.main.get(), sourceSets["common"]) {
         mixinConfig("reallink.mixins.json")
     }
 
+    runs {
+        config("client") {
+            dependsOn("writeModCoreClasspath")
+            jvmArgs("-Dreallink.core.classpath=${file("run/mod-core-classpath.txt").absolutePath}")
+        }
+        config("server") {
+            dependsOn("writeModCoreClasspath")
+            jvmArgs("-Dreallink.core.classpath=${file("run/mod-core-classpath.txt").absolutePath}")
+        }
+    }
+
     if (sourceSet == sourceSets.main.get()) {
         combineWith(sourceSets["common"])
     } else {
@@ -50,27 +61,6 @@ artifacts {
     add("common", tasks.named<org.gradle.jvm.tasks.Jar>("commonJar").map { it.archiveFile })
 }
 
-val modCore: Configuration by configurations.creating
-val modCoreRemapped: Configuration by configurations.creating
-dependencies {
-    modCore(project(path = ":impl", configuration = "core"))
-    modCoreRemapped(project(path = ":impl", configuration = "coreRemapped"))
-}
-tasks.register<Copy>("copyModCore") {
-    dependsOn(":impl:shadowJar")
-    from(zipTree(modCore.singleFile))
-    into(layout.buildDirectory.dir("generated_core/META-INF/mod-core"))
-}
-tasks.register<Copy>("copyModCoreRemapped") {
-    dependsOn(":impl:remapShadowJar")
-    from(zipTree(modCoreRemapped.singleFile))
-    into(layout.buildDirectory.dir("generated_core_remapped/META-INF/mod-core"))
-}
-tasks.processResources {
-    dependsOn("copyModCore")
-}
-sourceSets.main.get().resources.srcDir(layout.buildDirectory.dir("generated_core"))
-
 tasks.withType<ProcessResources>().configureEach {
     inputs.property("version", project.version)
 
@@ -79,15 +69,34 @@ tasks.withType<ProcessResources>().configureEach {
     }
 }
 
-tasks.jar {
-    exclude("*.tasty")
-    exclude("META-INF/mod-core/**/*")
+val modCore: Configuration by configurations.creating
+dependencies {
+    modCore(project(path = ":impl", configuration = "core"))
+}
+tasks.register("writeModCoreClasspath") {
+    dependsOn(modCore)
+    outputs.files("run/mod-core-classpath.txt")
+    doLast {
+        val text = modCore.resolve().map { it.absolutePath.toString() }.reduce { a, b -> "$a\n$b" }
+        file("run/mod-core-classpath.txt").writeText(text)
+    }
+}
+
+val modCoreRemapped: Configuration by configurations.creating
+dependencies {
+    modCoreRemapped(project(path = ":impl", configuration = "coreRemapped"))
+}
+tasks.register<Copy>("copyModCoreRemapped") {
+    dependsOn(":impl:shadowJar")
+    from(zipTree(modCoreRemapped.singleFile))
+    into(layout.buildDirectory.dir("core_remapped/META-INF/reallink-mod-core"))
 }
 tasks.register<Jar>("productJar") {
     dependsOn("remapJar")
     from(zipTree(tasks.named<RemapJarTask>("remapJar").map { it.outputs.files.singleFile }))
     dependsOn("copyModCoreRemapped")
-    from(layout.buildDirectory.dir("generated_core_remapped"))
+    from(layout.buildDirectory.dir("core_remapped"))
     manifest.from(tasks.jar.get().manifest)
     archiveClassifier = "product"
+    exclude("**/*.tasty")
 }

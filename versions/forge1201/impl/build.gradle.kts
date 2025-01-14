@@ -68,25 +68,18 @@ tasks.named<ShadowJar>("shadowJar") {
         exclude(dependency("org.slf4j:.*"))
     }
 
-    archiveClassifier = "dev-all"
-    minimize()
-}
-
-tasks.register<ShadowJar>("remapShadowJar") {
-    configurations = listOf(shade)
-
-    dependencies {
-        exclude(dependency("org.slf4j:.*"))
-    }
-
     dependsOn("remapJar")
     from(zipTree(tasks.named<RemapJarTask>("remapJar").map { it.outputs.files.singleFile }))
     archiveClassifier = "all"
     minimize()
 }
+
 configurations.create("core")
+dependencies {
+    "core"("com.idkidknow.mcreallink:reallink-core")
+}
 configurations.create("coreRemapped")
 artifacts {
-    add("core", tasks.named<ShadowJar>("shadowJar").map { it.archiveFile })
-    add("coreRemapped", tasks.named<ShadowJar>("remapShadowJar").map { it.archiveFile })
+    add("core", tasks.jar)
+    add("coreRemapped", tasks.named<ShadowJar>("shadowJar").map { it.archiveFile })
 }
