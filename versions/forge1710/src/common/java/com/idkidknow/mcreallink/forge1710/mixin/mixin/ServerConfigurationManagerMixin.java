@@ -12,7 +12,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class ServerConfigurationManagerMixin {
     @Inject(method = "sendChatMsgImpl", at = @At("HEAD"))
     private void getBroadcastingMessage(IChatComponent component, boolean isChat, CallbackInfo ci) {
-        if (!BroadcastingMessage.ignoreMessage()) {
+        if (!BroadcastingMessage.isIgnoreMessage()) {
             BroadcastingMessage.getCallback().accept(component);
         }
     }

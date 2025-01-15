@@ -4,7 +4,7 @@
     "name": "RealityLink",
     "version": "${version}",
     "mcversion": "1.7.10",
-    "description": "111",
+    "description": "A neat in-game chat interacting API with server-side l10n support, suitable for chatbots.",
     "url": "https://github.com/idkidknow/RealityLink",
     "credits": "",
     "authorList": ["idkana"],
