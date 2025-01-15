@@ -73,7 +73,7 @@ language files in mods and vanilla Minecraft can be loaded.
 - `autoStart`: Start the API server automatically
 when Minecraft server starting.
 
-#### For Minecraft below 1.13
+#### For Minecraft 1.7.10
 
 localeCode is in the format of `en_US`, not `en_us`.
 
