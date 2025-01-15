@@ -2,6 +2,12 @@
 
 A neat Minecraft in-game chat interacting API with server-side l10n support, suitable for chatbots.
 
+## Dependencies
+
+- Minecraft 1.7.10 with Forge: [Unimixins](https://github.com/LegacyModdingMC/UniMixins) ([CurseForge](https://www.curseforge.com/minecraft/mc-mods/unimixins))
+- Minecraft 1.12.2 with Forge: [MixinBooter](https://github.com/CleanroomMC/MixinBooter) ([CurseForge](https://www.curseforge.com/minecraft/mc-mods/mixin-booter))
+- Other version: no dependencies
+
 ## Getting Started
 
 1. Download the mod and put it into your `mods` folder.
@@ -41,6 +47,10 @@ the `assets` folder and then the zip archive is virtually a resource pack
 All these steps above can be done by a single command `/reallink download`
 result in `serverlang/vanilla.zip`.
 
+#### For Minecraft below 1.13
+
+Those language files' extension is `.lang` instead of `.json`.
+
 ### Configuration
 
 create a toml file `config/reallink/server.toml`:
@@ -50,7 +60,7 @@ host = "0.0.0.0"
 port = 39244
 localeCode = "en_us"
 resourcePackDirs = ["mods", "serverlang"]
-autoStart = true
+autoStart = false
 ```
 
 - `port`: The port server listens
@@ -62,6 +72,10 @@ recommended to include `mods` and `serverlang` folder so that
 language files in mods and vanilla Minecraft can be loaded.
 - `autoStart`: Start the API server automatically
 when Minecraft server starting.
+
+#### For Minecraft below 1.13
+
+localeCode is in the format of `en_US`, not `en_us`.
 
 #### TLS/mTLS (optional)
 
