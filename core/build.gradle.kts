@@ -1,10 +1,11 @@
 plugins {
     scala
     `java-library`
+    `maven-publish`
 }
 
 group = "com.idkidknow.mcreallink"
-version = "0.2.0-SNAPSHOT"
+version = "0.2.0"
 
 val scalaVersion = "3.5.2"
 
@@ -25,7 +26,7 @@ dependencies {
     implementation("org.scala-lang:scala3-library_3:$scalaVersion")
     scalaCompilerPlugins("org.wartremover:wartremover_$scalaVersion:3.2.5")
 
-    api("com.idkidknow.mcreallink:reallink-core-api")
+    api("com.idkidknow.mcreallink:reallink-core-api_3:$version")
 
     implementation("org.typelevel:cats-effect_3:3.5.5")
     implementation("org.typelevel:log4cats-slf4j_3:2.7.0")
@@ -41,4 +42,24 @@ dependencies {
     implementation("com.softwaremill.sttp.tapir:tapir-netty-server-cats_3:1.11.9")
     implementation("org.http4s:http4s-netty-client_3:0.5.21")
     implementation("org.http4s:http4s-circe_3:0.23.30")
+}
+
+publishing {
+    repositories {
+        maven {
+            name = "myRepo"
+            url = uri("https://maven.idkidknow.com/releases")
+            credentials(PasswordCredentials::class)
+            authentication {
+                create<BasicAuthentication>("basic")
+            }
+        }
+    }
+
+    publications {
+        create<MavenPublication>("maven") {
+            from(components["java"])
+            artifactId = "${artifactId}_3"
+        }
+    }
 }

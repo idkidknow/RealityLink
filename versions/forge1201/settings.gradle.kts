@@ -21,5 +21,9 @@ plugins {
 
 rootProject.name = "reallink-forge1201"
 
-includeBuild("../../core")
+includeBuild("../../core") {
+    dependencySubstitution {
+        substitute(module("com.idkidknow.mcreallink:reallink-core_3")).using(project(":"))
+    }
+}
 include("impl")

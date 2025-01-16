@@ -6,7 +6,7 @@ plugins {
 }
 
 group = "com.idkidknow.mcreallink"
-version = "0.2.0-SNAPSHOT"
+version = "0.2.0"
 
 java {
     toolchain {

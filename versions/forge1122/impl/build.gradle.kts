@@ -21,6 +21,7 @@ repositories {
     mavenCentral()
     maven("https://mcentral.firstdark.dev/releases")
     maven("https://repo.spongepowered.org/maven/")
+    maven("https://maven.idkidknow.com/releases")
 }
 
 // scala
@@ -54,7 +55,7 @@ unimined.minecraft(sourceSets.main.get()) {
 
 dependencies {
     compileOnly(project(path = ":" , configuration = "common"))
-    implementation("com.idkidknow.mcreallink:reallink-core")
+    implementation("com.idkidknow.mcreallink:reallink-core_3:0.2.0")
 }
 
 val shade: Configuration by configurations.creating

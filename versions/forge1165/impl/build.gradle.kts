@@ -21,6 +21,7 @@ repositories {
     mavenCentral()
     maven("https://mcentral.firstdark.dev/releases")
     maven("https://repo.spongepowered.org/maven/")
+    maven("https://maven.idkidknow.com/releases")
 }
 
 // scala
@@ -77,7 +78,7 @@ tasks.named<ShadowJar>("shadowJar") {
 
 configurations.create("core")
 dependencies {
-    "core"("com.idkidknow.mcreallink:reallink-core")
+    "core"("com.idkidknow.mcreallink:reallink-core_3:0.2.0")
     "core"("org.apache.logging.log4j:log4j-slf4j2-impl:2.24.3")
 }
 configurations.create("coreRemapped")

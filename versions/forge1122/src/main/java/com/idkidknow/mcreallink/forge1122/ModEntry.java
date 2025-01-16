@@ -14,7 +14,7 @@ import org.apache.logging.log4j.Logger;
 import java.lang.reflect.Method;
 import java.util.function.Function;
 
-@Mod(modid = "reallink", version = "0.2.0-SNAPSHOT", name = "RealityLink", acceptableRemoteVersions = "*")
+@Mod(modid = "reallink", version = "0.2.0", name = "RealityLink", acceptableRemoteVersions = "*")
 public class ModEntry {
     private static final Logger logger = LogManager.getLogger(ModEntry.class);
 
