@@ -1,0 +1,26 @@
+modLoader = "javafml"
+loaderVersion = "[43,)"
+license = "MIT"
+
+[[mods]]
+modId = "reallink"
+version = "${version}"
+displayName = "RealityLink"
+description = """
+A neat in-game chat interacting API with server-side l10n support, suitable for chatbots.
+"""
+displayTest = "IGNORE_SERVER_VERSION"
+
+[[dependencies.reallink]]
+modId = "forge"
+mandatory = true
+versionRange = "[43,)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.reallink]]
+modId = "minecraft"
+mandatory = true
+versionRange = "[1.19.2,1.20)"
+ordering = "NONE"
+side = "BOTH"
