@@ -113,7 +113,9 @@ public class ModLoad {
                     }
                 }
                 try {
-                    return mcClassLoader.getResources(name);
+                    var resources = mcClassLoader.getResources(name);
+                    if (!resources.hasMoreElements()) throw new IOException();
+                    return resources;
                 } catch (IOException ignored) {}
                 return mcClassLoader.getResources("META-INF/reallink-mod-core/" + name);
             }

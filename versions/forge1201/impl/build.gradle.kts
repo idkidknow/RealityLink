@@ -60,7 +60,7 @@ dependencies {
 
 val shade: Configuration by configurations.creating
 dependencies {
-    shade("com.idkidknow.mcreallink:reallink-core")
+    shade("com.idkidknow.mcreallink:reallink-core_3")
 }
 tasks.named<ShadowJar>("shadowJar") {
     configurations = listOf(shade)
@@ -77,7 +77,7 @@ tasks.named<ShadowJar>("shadowJar") {
 
 configurations.create("core")
 dependencies {
-    "core"("com.idkidknow.mcreallink:reallink-core")
+    "core"("com.idkidknow.mcreallink:reallink-core_3")
 }
 configurations.create("coreRemapped")
 artifacts {
