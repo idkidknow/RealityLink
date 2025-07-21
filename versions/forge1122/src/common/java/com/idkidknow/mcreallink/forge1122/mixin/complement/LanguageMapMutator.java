@@ -6,7 +6,7 @@ import java.util.function.Function;
 
 public interface LanguageMapMutator {
     void reallink$setFunction(Function<String, String> func);
-    LanguageMap reallink$getDefault();
+    LanguageMapWrapper reallink$getDefault();
 
     static LanguageMap make(Function<String, String> func) {
         LanguageMap ret = new LanguageMap();
@@ -15,6 +15,6 @@ public interface LanguageMapMutator {
     }
 
     static LanguageMap getDefault() {
-        return ((LanguageMapMutator) (Object) new LanguageMap()).reallink$getDefault();
+        return (((LanguageMapMutator) (Object) new LanguageMap()).reallink$getDefault()).get();
     }
 }

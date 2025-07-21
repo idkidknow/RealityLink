@@ -60,7 +60,7 @@ dependencies {
 
 val shade: Configuration by configurations.creating
 dependencies {
-    shade("com.idkidknow.mcreallink:reallink-core")
+    shade("com.idkidknow.mcreallink:reallink-core_3")
     shade("org.apache.logging.log4j:log4j-slf4j2-impl:2.24.3")
 }
 tasks.named<ShadowJar>("shadowJar") {

@@ -1,6 +1,7 @@
 package com.idkidknow.mcreallink.forge1122.mixin.mixin;
 
 import com.idkidknow.mcreallink.forge1122.mixin.complement.LanguageMapMutator;
+import com.idkidknow.mcreallink.forge1122.mixin.complement.LanguageMapWrapper;
 import net.minecraft.util.text.translation.LanguageMap;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
@@ -35,7 +36,7 @@ public abstract class LanguageMapMixin implements LanguageMapMutator {
     }
 
     @Override
-    public LanguageMap reallink$getDefault() {
-        return instance;
+    public LanguageMapWrapper reallink$getDefault() {
+        return new LanguageMapWrapper(instance);
     }
 }
