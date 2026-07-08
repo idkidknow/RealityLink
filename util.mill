@@ -1,0 +1,291 @@
+package build
+
+import mill.*, scalalib.*
+import mill.api.BuildCtx
+import java.nio.file.attribute.FileTime
+import java.util.jar.JarEntry
+import java.util.jar.JarFile
+import java.util.jar.JarInputStream
+import java.util.jar.JarOutputStream
+import java.util.jar.Manifest
+import scala.util.Using
+
+val FixedTime: FileTime = FileTime.fromMillis(1145141919810L)
+
+private def copyJarEntries(
+    src: os.Path,
+    transform: String => String,
+    out: JarOutputStream,
+    copied: collection.mutable.Set[String],
+): Unit = {
+  Using.resource(JarInputStream(src.getInputStream)) { jis =>
+    Iterator.continually(jis.getNextJarEntry).takeWhile(_ != null).foreach {
+      entry =>
+        val newName = transform(entry.getName)
+        assert(entry.isDirectory == newName.endsWith("/"))
+        if (!copied.contains(newName)) {
+          val newEntry = JarEntry(newName)
+          newEntry.setLastModifiedTime(FixedTime)
+          newEntry.setLastAccessTime(FixedTime)
+          newEntry.setCreationTime(FixedTime)
+          out.putNextEntry(newEntry)
+          if (entry.isDirectory) {
+            out.closeEntry()
+          } else {
+            jis.transferTo(out)
+            out.closeEntry()
+          }
+          copied.add(newName)
+        }
+    }
+  }
+}
+
+def mergeJar(
+    out: os.Path,
+    manifest: Manifest,
+    jars: (os.Path, String => String)*
+): Unit = {
+  Using.resource(JarOutputStream(os.write.outputStream(out))) { jos =>
+    val manifestEntry = JarEntry(JarFile.MANIFEST_NAME)
+    manifestEntry.setLastModifiedTime(FixedTime)
+    manifestEntry.setLastAccessTime(FixedTime)
+    manifestEntry.setCreationTime(FixedTime)
+    jos.putNextEntry(manifestEntry)
+    manifest.write(jos)
+    jos.closeEntry()
+    val copied = collection.mutable.Set.empty[String]
+    jars.foreach { case (jar, transform) =>
+      copyJarEntries(jar, transform, jos, copied)
+    }
+  }
+}
+
+trait ModDev extends Module {
+  def platform: ModDev.Platform
+  def core: Core
+
+  def runClient(): Command[Unit]
+  def runServer(): Command[Unit]
+
+  def coreRemappedJar: T[PathRef] = Task {
+    val input = core.assembly().path.toString
+    platform
+      .callGradle("coreJar")()
+      .callWithEnv(Map("REALITYLINK_CORE_JAR" -> input))
+    BuildCtx.withFilesystemCheckerDisabled {
+      val path = platform.buildDir / "libs/core_remapped.jar"
+      PathRef(path).withRevalidateOnce
+    }
+  }
+
+  def jar: T[PathRef] = Task {
+    val thinJar = platform.thinRemappedJar().path
+    val coreJar = coreRemappedJar().path
+    val out = Task.dest / "out.jar"
+    mergeJar(
+      out,
+      java.util.jar.JarFile(thinJar.toIO).getManifest,
+      thinJar -> identity,
+      (coreJar, name => s"META-INF/realitylink/$name"),
+    )
+    PathRef(out)
+  }
+
+  trait Core extends build.ModCore {
+    override def moduleDir = super.moduleDir / os.up
+
+    override def unmanagedClasspath = Task {
+      // Just make the BSP server be aware of the platform sources
+      platform.platformSources()
+    }
+    override def localCompileClasspath = Task {
+      // super.localCompileClasspath contains unmanagedClasspath
+      // but platform.platformSources should not be here actually
+      compileResources()
+    }
+    override def resolvedMvnDeps = Task {
+      super.resolvedMvnDeps() ++ platform.platformDeps()
+    }
+
+    override def assemblyRules = Seq(
+      Assembly.Rule.ExcludePattern(".*\\.tasty"),
+      Assembly.Rule.ExcludePattern("^scala/runtime/Statics\\$VM\\.class$"),
+    )
+  }
+}
+
+object ModDev {
+  final case class CallGradle(proc: os.proc, cwd: os.Path) {
+    def callWithEnv(env: Map[String, String]): Unit = proc.call(
+      cwd = cwd,
+      stdout = os.Inherit,
+      stderr = os.Inherit,
+      env = env,
+    )
+    def call(): Unit = callWithEnv(Map.empty)
+  }
+
+  trait Platform extends Module {
+    def sources: T[Seq[PathRef]] = Task.Sources(
+      "src",
+      "build.gradle.kts",
+      "settings.gradle.kts",
+      "gradle.properties",
+    )
+
+    def buildDir: os.Path = moduleDir / "build"
+
+    def callGradle(args: os.Shellable*): Task[CallGradle] = Task.Anon {
+      sources()
+      CallGradle(os.proc(((moduleDir / "gradlew") +: args)*), moduleDir)
+    }
+
+    def platformDeps: T[Seq[PathRef]] = Task {
+      callGradle("writePlatformDeps")().call()
+      BuildCtx.withFilesystemCheckerDisabled {
+        val paths =
+          os.read(buildDir / "platform_deps.txt").split('\n')
+        paths.map { path =>
+          PathRef(os.Path(path)).withRevalidateOnce
+        }.toSeq
+      }
+    }
+    def platformSources: T[Seq[PathRef]] = Task {
+      callGradle("writePlatformSources")().call()
+      BuildCtx.withFilesystemCheckerDisabled {
+        val paths =
+          os.read(buildDir / "platform_sources.txt").split('\n')
+        paths.map { path =>
+          PathRef(os.Path(path)).withRevalidateOnce
+        }.toSeq
+      }
+    }
+
+    def thinRemappedJar: T[PathRef]
+  }
+
+  trait MDG extends ModDev {
+    def platform: MDG.Platform
+
+    def launchScripts: T[MDG.LaunchScripts] = Task {
+      val classpath = core.runClasspath().map(_.path)
+      val txt = Task.dest / "core_run_classpath.txt"
+      os.write(txt, classpath.mkString("\n"))
+      platform
+        .callGradle("createLaunchScripts")()
+        .callWithEnv(Map("REALITYLINK_CORE_RUN_CLASSPATH" -> txt.toString))
+      BuildCtx.withFilesystemCheckerDisabled {
+        val base = platform.buildDir / "moddev"
+        val client = PathRef(base / "runClient.sh").withRevalidateOnce
+        val server = PathRef(base / "runServer.sh").withRevalidateOnce
+        MDG.LaunchScripts(client, server)
+      }
+    }
+
+    override def runClient(): Command[Unit] = Task.Command(exclusive = true) {
+      val script = launchScripts().client.path
+      os.proc(script)
+        .call(
+          stdin = os.Inherit,
+          stdout = os.Inherit,
+          stderr = os.Inherit,
+        )
+    }
+
+    override def runServer(): Command[Unit] = Task.Command(exclusive = true) {
+      val script = launchScripts().server.path
+      os.proc(script)
+        .call(
+          stdin = os.Inherit,
+          stdout = os.Inherit,
+          stderr = os.Inherit,
+        )
+    }
+  }
+
+  object MDG {
+    final case class LaunchScripts(client: PathRef, server: PathRef)
+        derives upickle.ReadWriter
+
+    trait Platform extends ModDev.Platform {
+      override def thinRemappedJar: T[PathRef] = Task {
+        callGradle("jar")().call()
+        BuildCtx.withFilesystemCheckerDisabled {
+          PathRef(
+            buildDir / "libs/platform_thin_remapped.jar"
+          ).withRevalidateOnce
+        }
+      }
+    }
+  }
+
+  trait WithDowngrade extends ModDev {
+    def core: Downgrade
+
+    override def coreRemappedJar: T[PathRef] = Task {
+      val input = core.downgradedJar().path.toString
+      platform
+        .callGradle("remapCoreJar")()
+        .callWithEnv(Map("REALITYLINK_CORE_JAR" -> input))
+      BuildCtx.withFilesystemCheckerDisabled {
+        val path = platform.buildDir / "libs/core_remapped.jar"
+        PathRef(path).withRevalidateOnce
+      }
+    }
+
+    trait Downgrade extends Core {
+      override def jvmVersion = "17"
+
+      def jvmDowngraderClasspath: T[Seq[PathRef]] = Task {
+        defaultResolver().classpath(
+          Seq(
+            mvn"xyz.wagyourtail.jvmdowngrader:jvmdowngrader:1.3.6;classifier=all"
+          )
+        )
+      }
+
+      def jvmDowngraderJavaApi: T[PathRef] = Task {
+        import coursier.{Attributes, Type, Classifier, Fetch}
+        val dep =
+          mvn"xyz.wagyourtail.jvmdowngrader:jvmdowngrader-java-api:1.3.6".dep
+            .withTransitive(false)
+            .withAttributes(Attributes(Type.empty, Classifier("downgraded-8")))
+        val file = Fetch().addDependencies(dep).run().head
+        PathRef(os.Path(file))
+      }
+
+      def downgradedJar: T[PathRef] = Task {
+        val input = assembly().path.toString
+        val classpath = platform
+          .platformDeps()
+          .map(_.path.toString)
+          .mkString(java.io.File.pathSeparator)
+        val out = Task.dest / "core_downgraded.jar"
+        mill.util.Jvm.callProcess(
+          mainClass = "xyz.wagyourtail.jvmdg.cli.Main",
+          classPath = jvmDowngraderClasspath().map(_.path).toSeq,
+          mainArgs = Seq(
+            "-c",
+            "52",
+            "downgrade",
+            "-cp",
+            classpath,
+            "-t",
+            input,
+            "-",
+            "shade",
+            "-d",
+            jvmDowngraderJavaApi().path.toString,
+            "-p",
+            "com/idkidknow/realitylink",
+            "-t",
+            "-",
+            out.toString,
+          ),
+        )
+        PathRef(out)
+      }
+    }
+  }
+}

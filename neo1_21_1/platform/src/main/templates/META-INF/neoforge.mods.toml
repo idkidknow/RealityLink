@@ -1,0 +1,32 @@
+modLoader = "javafml"
+loaderVersion = "[1,)"
+license = "MIT"
+issueTrackerURL = "https://github.com/idkidknow/RealityLink/issues"
+
+[[mods]]
+modId = "realitylink"
+version = "${version}"
+displayName = "RealityLink"
+displayURL = "https://github.com/idkidknow/RealityLink"
+# logoFile = "examplemod.png"
+authors = "idkana"
+description = """
+A neat in-game chat interacting API with server-side l10n support, suitable for chatbots.
+"""
+
+[[mixins]]
+config = "realitylink.mixins.json"
+
+[[dependencies.realitylink]]
+modId = "neoforge"
+type = "required"
+versionRange = "[21.1.0,)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.realitylink]]
+modId = "minecraft"
+type = "required"
+versionRange = "[1.21.1,1.22)"
+ordering = "NONE"
+side = "BOTH"

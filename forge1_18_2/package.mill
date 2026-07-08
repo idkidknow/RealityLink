@@ -1,0 +1,12 @@
+package build.forge1_18_2
+
+import mill.*
+import build.ModDev.MDG
+
+object `package` extends MDG {
+  object platform extends MDG.Platform
+
+  object core extends Core {
+    def jvmVersion = "17"
+  }
+}

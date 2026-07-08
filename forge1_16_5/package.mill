@@ -1,0 +1,47 @@
+package build.forge1_16_5
+
+import mill.*, scalalib.*
+import mill.api.BuildCtx
+import build.ModDev
+
+object `package` extends ModDev.WithDowngrade {
+  object platform extends ModDev.Platform {
+    override def thinRemappedJar: T[PathRef] = Task {
+      callGradle("remapJar")().call()
+      BuildCtx.withFilesystemCheckerDisabled {
+        PathRef(
+          buildDir / "libs/platform_thin_remapped.jar"
+        ).withRevalidateOnce
+      }
+    }
+  }
+
+  object core extends Downgrade {
+    def mvnDeps = Task {
+      super.mvnDeps() ++ Seq(
+        mvn"org.apache.logging.log4j:log4j-slf4j2-impl:2.24.3"
+      )
+    }
+  }
+
+  def coreRunClasspathTxt: T[PathRef] = Task {
+    val classpath = core.runClasspath().map(_.path)
+    val txt = Task.dest / "core_run_classpath.txt"
+    os.write(txt, classpath.mkString("\n"))
+    PathRef(txt)
+  }
+
+  override def runClient() = Task.Command(exclusive = true) {
+    val txt = coreRunClasspathTxt().path
+    platform
+      .callGradle("runClient")()
+      .callWithEnv(Map("REALITYLINK_CORE_RUN_CLASSPATH" -> txt.toString))
+  }
+
+  override def runServer() = Task.Command(exclusive = true) {
+    val txt = coreRunClasspathTxt().path
+    platform
+      .callGradle("runServer")()
+      .callWithEnv(Map("REALITYLINK_CORE_RUN_CLASSPATH" -> txt.toString))
+  }
+}

@@ -1,0 +1,44 @@
+//| mill-version: 1.1.7
+//| mvnDeps:
+//| - com.goyeau::mill-scalafix::0.6.1
+
+package build
+
+import mill.*, scalalib.*
+import com.goyeau.mill.scalafix.ScalafixModule
+
+trait ModCore extends ScalaModule with ScalafixModule {
+  override def scalaVersion = "3.8.4"
+
+  override def scalacOptions = Seq(
+    "-Wunused:all",
+    "-deprecation",
+  )
+
+  override def sources = Task {
+    super.sources() :+ realitylink.source()
+  }
+
+  override def mvnDeps = Task {
+    super.mvnDeps() ++ Seq(
+      mvn"org.typelevel::cats-effect:3.7.0",
+      mvn"org.typelevel::log4cats-slf4j:2.8.0",
+      mvn"com.indoorvivants::toml:0.3.0",
+      mvn"io.circe::circe-core:0.14.16",
+      mvn"io.circe::circe-generic:0.14.16",
+      mvn"io.circe::circe-parser:0.14.16",
+      mvn"co.fs2::fs2-core:3.13.0",
+      mvn"co.fs2::fs2-io:3.13.0",
+      mvn"de.lhns::fs2-compress-zip:2.3.2",
+      mvn"com.softwaremill.sttp.tapir::tapir-core:1.13.25",
+      mvn"com.softwaremill.sttp.tapir::tapir-json-circe:1.13.25",
+      mvn"com.softwaremill.sttp.tapir::tapir-netty-server-cats:1.13.25",
+      mvn"org.http4s::http4s-ember-client:0.23.36",
+      mvn"org.http4s::http4s-circe:0.23.36",
+    )
+  }
+}
+
+object realitylink extends Module {
+  def source: Task[PathRef] = Task.Source("src")
+}

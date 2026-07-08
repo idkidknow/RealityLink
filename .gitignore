@@ -2,12 +2,15 @@
 .kotlin/
 build/
 .idea/
+.eclipse/
 run/
 *.log
 .vscode/
 target/
 .bloop/
 .metals/
+.bsp/
 bin/
 *.code-workspace
 .settings/
+out/
