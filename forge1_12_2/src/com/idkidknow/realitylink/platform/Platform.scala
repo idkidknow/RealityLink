@@ -8,10 +8,14 @@ import com.idkidknow.realitylink.platform.Platform.Component
 import com.idkidknow.realitylink.platform.Platform.MinecraftServer
 import com.idkidknow.realitylink.platform.api.API
 import fs2.io.file.Path
+import net.minecraft.stats.StatList
+import net.minecraft.stats.StatisticsManagerServer
 import net.minecraft.util.text.ITextComponent
 import net.minecraft.util.text.TextComponentString
 import net.minecraft.util.text.translation.LanguageMap
 
+import java.io.File
+import java.util.UUID
 import scala.util.Try
 
 object Platform extends API {
@@ -93,6 +97,23 @@ object Platform extends API {
         BroadcastingMessage.ignoreTemporarily { () =>
           server.getPlayerList.sendMessage(message, true)
         }
+
+      override def getStat(uuid: UUID, statName: String): Option[Int] = {
+        Option(StatList.getOneShotStat(statName)).flatMap { stat =>
+          Option(server.getPlayerList.getPlayerByUUID(uuid))
+            .map(_.getStatFile.readStat(stat)) // stats of the online player
+            .orElse {
+              // read stored stats when player not in server
+              val worldDir =
+                server.getWorld(0).getSaveHandler.getWorldDirectory.toPath
+              val statsFile =
+                worldDir.resolve(s"stats/$uuid.json").toFile
+              val stats = new StatisticsManagerServer(server, statsFile)
+              stats.readStatFile()
+              Option(stats.readStat(stat))
+            }
+        }
+      }
     }
   }
 }

@@ -3,6 +3,7 @@ package com.idkidknow.realitylink.server
 import cats.effect.kernel.Async
 import cats.effect.kernel.Resource
 import cats.syntax.all.*
+import com.idkidknow.realitylink.platform.MinecraftServer
 import fs2.Stream
 import fs2.io.net.Network
 import io.circe.parser
@@ -33,56 +34,56 @@ object ChatEvent {
   given io.circe.Codec[ChatEvent] = io.circe.generic.semiauto.deriveCodec
 }
 
-trait RealityLinkServer[F[_]] {
-  def run(
-      interface: ChatInterface[F],
-      config: RealityLinkServerConfig,
-  ): Resource[F, Unit]
-}
-
 object RealityLinkServer {
-  private def minecraftChatServerEndpoint[F[_]: {Async, LoggerFactory}](
-      wsb: WebSocketBuilder2[F],
-      interface: ChatInterface[F]
-  ): HttpRoutes[F] = {
-    val logger = LoggerFactory[F].getLogger
-    val dsl = Http4sDsl[F]
-    import dsl.*
-    HttpRoutes.of[F] {
-      case GET -> Root / "minecraft-chat" =>
-        wsb.build { receive =>
-          val broadcastInput: Stream[F, Nothing] =
-            receive.flatMap {
-              case WebSocketFrame.Text((text, _)) =>
-                parser.decode[BroadcastRequest](text) match {
-                  case Left(e) => Stream.exec(logger.warn(e)("Received invalid json"))
-                  case Right(req) => Stream.exec(interface.broadcastInGame(req))
-                }
-              case _ =>
-                Stream.exec(logger.warn("Received invalid message"))
-            }
+  def run[F[_]: {Async, LoggerFactory, Network}](
+      config: RealityLinkServerConfig,
+      interface: ChatInterface[F],
+      server: MinecraftServer,
+  ): Resource[F, Unit] = {
+    def routes(wsb: WebSocketBuilder2[F]) = {
+      val logger = LoggerFactory[F].getLogger
+      val dsl = Http4sDsl[F]
+      import dsl.*
+      HttpRoutes.of[F] {
+        case GET -> Root / "minecraft-chat" =>
+          wsb.build { receive =>
+            val broadcastInput: Stream[F, Nothing] =
+              receive.flatMap {
+                case WebSocketFrame.Text((text, _)) =>
+                  parser.decode[BroadcastRequest](text) match {
+                    case Left(e) =>
+                      Stream.exec(logger.warn(e)("Received invalid json"))
+                    case Right(req) =>
+                      Stream.exec(interface.broadcastInGame(req))
+                  }
+                case _ =>
+                  Stream.exec(logger.warn("Received invalid message"))
+              }
 
-          val out: Stream[F, WebSocketFrame] =
-            interface.outwardMessages.map { event =>
-              WebSocketFrame.Text(event.asJson.noSpaces)
-            }
+            val out: Stream[F, WebSocketFrame] =
+              interface.outwardMessages.map { event =>
+                WebSocketFrame.Text(event.asJson.noSpaces)
+              }
 
-          val autoPing: Stream[F, WebSocketFrame] =
-            Stream.awakeEvery[F](20.seconds).as(WebSocketFrame.Ping())
+            val autoPing: Stream[F, WebSocketFrame] =
+              Stream.awakeEvery[F](20.seconds).as(WebSocketFrame.Ping())
 
-          out.concurrently(broadcastInput).mergeHaltBoth(autoPing)
-        }
+            out.concurrently(broadcastInput).mergeHaltBoth(autoPing)
+          }
+
+        case GET -> Root / "stats" / UUIDVar(uuid) / statName =>
+          Ok(server.getStat(uuid, statName).asJson.noSpaces)
+      }
     }
+
+    EmberServerBuilder
+      .default[F]
+      .withHost(config.host)
+      .withPort(config.port)
+      .withHttpWebSocketApp { wsb =>
+        routes(wsb).orNotFound
+      }
+      .build
+      .void
   }
-
-  def apply[F[_]: {Async, LoggerFactory, Network}]: RealityLinkServer[F] = 
-    (interface: ChatInterface[F], config: RealityLinkServerConfig) => {
-      EmberServerBuilder.default[F]
-        .withHost(config.host)
-        .withPort(config.port)
-        .withHttpWebSocketApp(wsb => minecraftChatServerEndpoint(wsb, interface).orNotFound)
-        .build
-        .void
-    }
-
 }

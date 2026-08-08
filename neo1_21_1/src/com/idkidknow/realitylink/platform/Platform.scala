@@ -7,12 +7,18 @@ import com.idkidknow.realitylink.platform.Platform.MinecraftServer
 import com.idkidknow.realitylink.platform.api.API
 import fs2.io.file.Path
 import net.minecraft.network.chat.FormattedText
+import net.minecraft.stats.ServerStatsCounter
+import net.minecraft.stats.Stat
 import net.minecraft.util.FormattedCharSequence
+import net.minecraft.world.level.storage.LevelResource
+import net.minecraft.world.scores.criteria.ObjectiveCriteria
 import net.neoforged.fml.loading.FMLPaths
 import net.neoforged.neoforge.common.NeoForge
 import net.neoforged.neoforge.event.server.ServerStartingEvent
 import net.neoforged.neoforge.event.server.ServerStoppingEvent
 
+import java.util.UUID
+import scala.jdk.OptionConverters.*
 import scala.util.Try
 
 object Platform extends API {
@@ -107,6 +113,29 @@ object Platform extends API {
         BroadcastingMessage.ignoreTemporarily { () =>
           server.getPlayerList.broadcastSystemMessage(message, false)
         }
+
+      override def getStat(uuid: UUID, statName: String): Option[Int] = {
+        ObjectiveCriteria
+          .byName(statName)
+          .toScala
+          .collect { case s: Stat[?] =>
+            s
+          }
+          .flatMap { stat =>
+            Option(server.getPlayerList.getPlayer(uuid))
+              .map(_.getStats.getValue(stat)) // stats of the online player
+              .orElse {
+                // read stored stats when player not in server
+                val statsFile =
+                  server
+                    .getWorldPath(LevelResource.PLAYER_STATS_DIR)
+                    .resolve(s"$uuid.json")
+                    .toFile
+                val counter = new ServerStatsCounter(server, statsFile)
+                Option(counter.getValue(stat))
+              }
+          }
+      }
     }
   }
 }

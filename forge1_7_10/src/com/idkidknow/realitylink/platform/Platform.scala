@@ -1,5 +1,6 @@
 package com.idkidknow.realitylink.platform
 
+import cats.syntax.all.*
 import com.idkidknow.realitylink.forge1710.ModEntry
 import com.idkidknow.realitylink.forge1710.mixin.BroadcastingMessage
 import com.idkidknow.realitylink.forge1710.mixin.ServerTranslate
@@ -7,11 +8,17 @@ import com.idkidknow.realitylink.platform.Platform.Component
 import com.idkidknow.realitylink.platform.Platform.MinecraftServer
 import com.idkidknow.realitylink.platform.api.API
 import fs2.io.file.Path
+import net.minecraft.entity.player.EntityPlayerMP
 import net.minecraft.server.MinecraftServer as McMinecraftServer
+import net.minecraft.stats.StatList
+import net.minecraft.stats.StatisticsFile
 import net.minecraft.util.ChatComponentText
 import net.minecraft.util.IChatComponent
 import net.minecraft.util.StringTranslate
 
+import java.io.File
+import java.util.UUID
+import scala.jdk.CollectionConverters.*
 import scala.util.Try
 
 object Platform extends API {
@@ -93,6 +100,30 @@ object Platform extends API {
         BroadcastingMessage.ignoreTemporarily { () =>
           server.getConfigurationManager.sendChatMsg(message)
         }
+
+      override def getStat(uuid: UUID, statName: String): Option[Int] = {
+        Option(StatList.func_151177_a(statName)).flatMap { stat =>
+          server.getConfigurationManager.playerEntityList.asScala
+            .collectFirst {
+              case p: EntityPlayerMP if p.getUniqueID === uuid => p
+            }
+            .map(
+              _.func_147099_x.writeStat(stat)
+            ) // stats of the online player
+            .orElse {
+              // read stored stats when player not in server
+              val worldDir = server
+                .worldServerForDimension(0)
+                .getSaveHandler
+                .getWorldDirectory
+                .toPath
+              val statsFile = worldDir.resolve(s"stats/$uuid.json").toFile
+              val stats = new StatisticsFile(server, statsFile)
+              stats.func_150882_a()
+              Option(stats.writeStat(stat))
+            }
+        }
+      }
     }
   }
 }

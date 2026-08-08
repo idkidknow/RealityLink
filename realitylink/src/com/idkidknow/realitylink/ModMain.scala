@@ -159,8 +159,8 @@ object ModMain {
     val interface: ChatInterface[F] =
       ChatInterface[F](server, broadcastingMessage, config.language)
     val runRealityLinkServerF: F[Nothing] = {
-      val serverR = RealityLinkServer[F]
-        .run(interface, config.serverConfig)
+      val serverR =
+        RealityLinkServer.run[F](config.serverConfig, interface, server)
 
       logger.info(
         show"Starting RealityLink server on ${config.serverConfig.host}:${config.serverConfig.port}"
