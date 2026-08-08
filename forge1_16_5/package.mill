@@ -22,6 +22,7 @@ object `package` extends ModDev.WithDowngrade {
         mvn"org.apache.logging.log4j:log4j-slf4j2-impl:2.24.3"
       )
     }
+    def enableBsp = build.bspEnabled("forge1_16_5")
   }
 
   def coreRunClasspathTxt: T[PathRef] = Task {

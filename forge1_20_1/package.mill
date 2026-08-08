@@ -8,5 +8,6 @@ object `package` extends MDG {
 
   object core extends Core {
     def jvmVersion = "21"
+    def enableBsp = build.bspEnabled("forge1_20_1")
   }
 }

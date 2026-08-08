@@ -8,6 +8,7 @@ object `package` extends MDG {
 
   object core extends Core {
     def jvmVersion = "21"
+    def enableBsp = build.bspEnabled("neo1_21_1")
   }
 
   // no remap needed

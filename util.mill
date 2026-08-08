@@ -61,6 +61,11 @@ def mergeJar(
   }
 }
 
+private val bspEnabledList = BuildCtx.watchValue {
+  os.read.lines(BuildCtx.workspaceRoot / ".enableBsp")
+}
+def bspEnabled(name: String): Boolean = bspEnabledList.contains(name)
+
 trait ModDev extends Module {
   def platform: ModDev.Platform
   def core: Core

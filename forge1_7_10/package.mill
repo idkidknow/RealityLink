@@ -16,7 +16,9 @@ object `package` extends ModDev.WithDowngrade {
     }
   }
 
-  object core extends Downgrade
+  object core extends Downgrade {
+    def enableBsp = build.bspEnabled("forge1_7_10")
+  }
 
   def coreRunClasspathTxt: T[PathRef] = Task {
     val classpath = core.runClasspath().map(_.path)
