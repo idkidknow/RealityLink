@@ -84,3 +84,39 @@ use the command `/realitylink start` to launch the API server.
 
 The server will be launched automatically if `autoStart = true` in
 `server.toml`.
+
+## Development
+
+The shared code is written in Scala 3 under `realitylink/`.
+Each version has a `package.mill` and a standalone Gradle project
+under `platform/` that fetches the Minecraft and mod loader things
+and handles remapping, mixins and dev runs.
+
+For IDE support, enable BSP by adding the module name to
+`.enableBsp`. For example, create `.enableBsp` file with
+
+```
+neo1_21_1
+forge1_7_10
+```
+
+which enables IDE support for `neo1_21_1` and `forge1_7_10`.
+
+### Building
+
+Build the mod jar with
+
+```sh
+./mill forge1_20_1.jar
+```
+
+You can replace `forge1_20_1` with: `forge1_7_10`,
+`forge1_12_2`, `forge1_16_5`, `forge1_18_2`, `forge1_19_2`,
+`forge1_20_1` or `neo1_21_1`.
+
+### Run (dev mode)
+
+```sh
+./mill forge1_20_1.runClient
+./mill forge1_20_1.runServer
+```
