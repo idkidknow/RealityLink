@@ -1,23 +1,18 @@
 package com.idkidknow.realitylink.server
 
-import cats.Applicative
-import cats.effect.Concurrent
 import cats.effect.kernel.Async
 import cats.effect.kernel.Resource
-import cats.effect.std.Dispatcher
-import io.netty.channel.ChannelPipeline
-import io.netty.handler.ssl.SslContext
-import io.netty.handler.ssl.SslContextBuilder
-import io.netty.handler.ssl.SslHandler
-import sttp.capabilities.WebSockets
-import sttp.capabilities.fs2.Fs2Streams
-import sttp.tapir.*
-import sttp.tapir.generic.auto.*
-import sttp.tapir.json.circe.*
-import sttp.tapir.server.ServerEndpoint
-import sttp.tapir.server.netty.NettyConfig
-import sttp.tapir.server.netty.cats.NettyCatsServer
-import sttp.ws.WebSocketFrame
+import cats.syntax.all.*
+import fs2.Stream
+import fs2.io.net.Network
+import io.circe.parser
+import io.circe.syntax.*
+import org.http4s.HttpRoutes
+import org.http4s.dsl.Http4sDsl
+import org.http4s.ember.server.EmberServerBuilder
+import org.http4s.server.websocket.WebSocketBuilder2
+import org.http4s.websocket.WebSocketFrame
+import org.typelevel.log4cats.LoggerFactory
 
 import scala.concurrent.duration.*
 
@@ -46,88 +41,48 @@ trait RealityLinkServer[F[_]] {
 }
 
 object RealityLinkServer {
-  private def minecraftChatServerEndpoint[F[_]: Concurrent](
+  private def minecraftChatServerEndpoint[F[_]: {Async, LoggerFactory}](
+      wsb: WebSocketBuilder2[F],
       interface: ChatInterface[F]
-  ): ServerEndpoint[Fs2Streams[F] & WebSockets, F] = {
-    endpoint.get
-      .in("minecraft-chat")
-      .out(
-        webSocketBody[
-          BroadcastRequest,
-          CodecFormat.Json,
-          ChatEvent,
-          CodecFormat.Json,
-        ](Fs2Streams[F])
-          .ignorePong(true)
-          .autoPongOnPing(true)
-          .autoPing(Some((20.seconds, WebSocketFrame.ping)))
-      )
-      .serverLogicSuccess[F] { _ =>
-        Applicative[F].pure { in =>
-          val broadcastInput: fs2.Stream[F, Unit] =
-            in.evalMap(interface.broadcastInGame)
-          val out: fs2.Stream[F, ChatEvent] = interface.outwardMessages
-          out.concurrently(broadcastInput)
+  ): HttpRoutes[F] = {
+    val logger = LoggerFactory[F].getLogger
+    val dsl = Http4sDsl[F]
+    import dsl.*
+    HttpRoutes.of[F] {
+      case GET -> Root / "minecraft-chat" =>
+        wsb.build { receive =>
+          val broadcastInput: Stream[F, Nothing] =
+            receive.flatMap {
+              case WebSocketFrame.Text((text, _)) =>
+                parser.decode[BroadcastRequest](text) match {
+                  case Left(e) => Stream.exec(logger.warn(e)("Received invalid json"))
+                  case Right(req) => Stream.exec(interface.broadcastInGame(req))
+                }
+              case _ =>
+                Stream.exec(logger.warn("Received invalid message"))
+            }
+
+          val out: Stream[F, WebSocketFrame] =
+            interface.outwardMessages.map { event =>
+              WebSocketFrame.Text(event.asJson.noSpaces)
+            }
+
+          val autoPing: Stream[F, WebSocketFrame] =
+            Stream.awakeEvery[F](20.seconds).as(WebSocketFrame.Ping())
+
+          out.concurrently(broadcastInput).mergeHaltBoth(autoPing)
         }
-      }
+    }
   }
 
-  def netty[F[_]: Async]: RealityLinkServer[F] =
-    (interface: ChatInterface[F], config: RealityLinkServerConfig) =>
-      Dispatcher
-        .parallel[F]
-        .flatMap { dispatcher =>
-          val sslContext: Option[SslContext] = config.tlsConfig match {
-            case TlsConfig.None => None
-            case TlsConfig.Tls(certChain, privateKey) =>
-              Some(
-                SslContextBuilder
-                  .forServer(
-                    certChain.toNioPath.toFile,
-                    privateKey.toNioPath.toFile,
-                  )
-                  .build()
-              )
-            case TlsConfig.MutualTls(certChain, privateKey, root) =>
-              Some(
-                SslContextBuilder
-                  .forServer(
-                    certChain.toNioPath.toFile,
-                    privateKey.toNioPath.toFile,
-                  )
-                  .trustManager(root.toNioPath.toFile)
-                  .build()
-              )
-          }
+  def apply[F[_]: {Async, LoggerFactory, Network}]: RealityLinkServer[F] = 
+    (interface: ChatInterface[F], config: RealityLinkServerConfig) => {
+      EmberServerBuilder.default[F]
+        .withHost(config.host)
+        .withPort(config.port)
+        .withHttpWebSocketApp(wsb => minecraftChatServerEndpoint(wsb, interface).orNotFound)
+        .build
+        .void
+    }
 
-          def sslHandler(pipeline: ChannelPipeline): Option[SslHandler] =
-            sslContext.map { sslContext =>
-              val engine = sslContext.newEngine(pipeline.channel().alloc())
-              engine.setUseClientMode(false)
-              config.tlsConfig match {
-                case TlsConfig.MutualTls(_, _, _) =>
-                  engine.setNeedClientAuth(true)
-                case _ => engine.setNeedClientAuth(false)
-              }
-              SslHandler(engine)
-            }
-
-          val nettyConfig: NettyConfig = NettyConfig.default
-            .host(config.host)
-            .port(config.port)
-            .initPipeline { cfg =>
-              { (pipeline, handler) =>
-                sslHandler(pipeline).foreach(pipeline.addFirst(_))
-                NettyConfig.defaultInitPipeline(cfg)(pipeline, handler)
-              }
-            }
-
-          Resource.make(
-            NettyCatsServer[F](dispatcher)
-              .config(nettyConfig)
-              .addEndpoint(minecraftChatServerEndpoint(interface))
-              .start()
-          )(_.stop())
-        }
-        .map(_ => ())
 }

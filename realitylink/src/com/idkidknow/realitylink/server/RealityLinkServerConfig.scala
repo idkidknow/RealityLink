@@ -1,15 +1,9 @@
 package com.idkidknow.realitylink.server
 
-import fs2.io.file.Path
+import com.comcast.ip4s.Host
+import com.comcast.ip4s.Port
 
 final case class RealityLinkServerConfig(
-    host: String,
-    port: Int,
-    tlsConfig: TlsConfig,
+    host: Host,
+    port: Port,
 )
-
-enum TlsConfig {
-  case None
-  case Tls(certChain: Path, privateKey: Path)
-  case MutualTls(certChain: Path, privateKey: Path, root: Path)
-}

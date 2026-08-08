@@ -29,8 +29,7 @@ public class ModEntry {
     @Mod.EventHandler
     public void init(FMLInitializationEvent event) {
         ClassLoader parentClassLoader = ModEntry.class.getClassLoader();
-        Function<String, Boolean> isolatedClass = name -> name.startsWith("io.netty")
-                || name.startsWith("scala")
+        Function<String, Boolean> isolatedClass = name -> name.startsWith("scala")
                 || name.startsWith("org.slf4j");
         Function<String, Boolean> mcResourcesFirst = name -> name.startsWith("META-INF/services/")
                 && !name.startsWith("META-INF/services/org.slf4j");

@@ -149,7 +149,7 @@ object ModMain {
     } yield ()
   }
 
-  private def runRealityLinkServer[F[_]: {Async, LoggerFactory}](
+  private def runRealityLinkServer[F[_]: {Async, LoggerFactory, Network}](
       server: MinecraftServer,
       supervisor: Supervisor[F],
       broadcastingMessage: CallbackBundle[F, Component, Unit],
@@ -159,8 +159,7 @@ object ModMain {
     val interface: ChatInterface[F] =
       ChatInterface[F](server, broadcastingMessage, config.language)
     val runRealityLinkServerF: F[Nothing] = {
-      val serverR = RealityLinkServer
-        .netty[F]
+      val serverR = RealityLinkServer[F]
         .run(interface, config.serverConfig)
 
       logger.info(

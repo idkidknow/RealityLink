@@ -72,13 +72,7 @@ object ModInit {
         ifFalse = {
           path.parent
             .map(parent => Files[F].createDirectories(parent))
-            .getOrElse(().pure[F]) >>
-            Stream
-              .emit(ServerToml.defaultTomlString)
-              .through(fs2.text.utf8.encode)
-              .through(Files[F].writeAll(path))
-              .compile
-              .drain
+            .getOrElse(().pure[F]) *> ServerToml.writeDefault(path)
         },
       )
   }

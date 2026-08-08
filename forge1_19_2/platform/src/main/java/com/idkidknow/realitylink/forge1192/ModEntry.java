@@ -13,7 +13,7 @@ public class ModEntry {
 
     public ModEntry() {
         var parentClassLoader = ModEntry.class.getClassLoader();
-        Function<String, Boolean> isolatedClass = name -> name.startsWith("io.netty");
+        Function<String, Boolean> isolatedClass = name -> false;
         Function<String, Boolean> mcResourcesFirst = name -> name.startsWith("META-INF/services/");
         ClassLoader cl;
         String coreClasspathFile = System.getProperty("realitylink.dev.core.classpath");
