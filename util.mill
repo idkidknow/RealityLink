@@ -124,6 +124,7 @@ object ModDev {
   final case class CallGradle(proc: os.proc, cwd: os.Path) {
     def callWithEnv(env: Map[String, String]): Unit = proc.call(
       cwd = cwd,
+      stdin = os.Inherit,
       stdout = os.Inherit,
       stderr = os.Inherit,
       env = env,
