@@ -5,6 +5,7 @@ import com.idkidknow.realitylink.forge1165.mixin.ServerTranslate
 import com.idkidknow.realitylink.platform.Platform.Component
 import com.idkidknow.realitylink.platform.Platform.MinecraftServer
 import com.idkidknow.realitylink.platform.api.API
+import com.idkidknow.realitylink.platform.api.PlayerInfo
 import fs2.io.file.Path
 import net.minecraft.network.chat.ChatType
 import net.minecraft.network.chat.FormattedText
@@ -14,11 +15,13 @@ import net.minecraft.util.FormattedCharSequence
 import net.minecraft.world.level.storage.LevelResource
 import net.minecraft.world.scores.criteria.ObjectiveCriteria
 import net.minecraftforge.common.MinecraftForge
+import net.minecraftforge.common.UsernameCache
 import net.minecraftforge.fml.event.server.FMLServerStartingEvent
 import net.minecraftforge.fml.event.server.FMLServerStoppingEvent
 import net.minecraftforge.fml.loading.FMLPaths
 
 import java.util.UUID
+import scala.jdk.CollectionConverters.*
 import scala.jdk.OptionConverters.*
 import scala.util.Try
 
@@ -140,6 +143,21 @@ object Platform extends API {
                 Option(counter.getValue(stat))
               }
           }
+      }
+
+      override def getOnlinePlayers: List[PlayerInfo] = {
+        server.getPlayerList.getPlayers.asScala
+          .map(_.getGameProfile)
+          .map { profile =>
+            PlayerInfo(profile.getName, profile.getId)
+          }
+          .toList
+      }
+
+      override def getCachedPlayers: List[PlayerInfo] = {
+        UsernameCache.getMap.asScala.map { case (uuid, name) =>
+          PlayerInfo(name, uuid)
+        }.toList
       }
     }
   }

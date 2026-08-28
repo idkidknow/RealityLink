@@ -73,6 +73,12 @@ object RealityLinkServer {
 
         case GET -> Root / "stats" / UUIDVar(uuid) / statName =>
           Ok(server.getStat(uuid, statName).asJson.noSpaces)
+
+        case GET -> Root / "online-players" =>
+          Ok(server.getOnlinePlayers.asJson.noSpaces)
+
+        case GET -> Root / "cached-players" =>
+          Ok(server.getCachedPlayers.asJson.noSpaces)
       }
     }
 

@@ -20,7 +20,9 @@ A neat Minecraft in-game chat interacting API with server-side l10n support, sui
 
 ## Usage
 
-### Chat
+### API
+
+#### Chat
 
 This mod runs on a Minecraft server and establishes a WebSocket server at `ws://host:port/minecraft-chat`. The server
 sends in-game chat messages as text frame
@@ -33,7 +35,7 @@ to broadcast a literal message in the game.
 Send `{"type": "json", "json": "${raw JSON text format}"}`
 to broadcast a rich message in the game.
 
-### Statistics
+#### Statistics
 
 Query a player's statistic:
 
@@ -50,6 +52,24 @@ GET http://host:port/stats/00000000-0000-0000-0000-000000000000/minecraft.custom
 ```
 
 See [Wiki: Statistics](https://minecraft.wiki/w/Statistics), [Wiki: Statistics for Minecraft below 1.13](https://minecraft.wiki/w/Statistics?oldid=1282014)
+
+#### Listing Players
+
+Query all players online:
+
+```
+GET http://host:port/online-players
+```
+
+Returns `{ name: string; uuid: string }[]`.
+
+Query all players:
+
+```
+GET http://host:port/cached-players
+```
+
+Returns `{ name: string; uuid: string }[]`.
 
 ### Preparing
 

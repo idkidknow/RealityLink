@@ -7,6 +7,7 @@ import com.idkidknow.realitylink.forge1710.mixin.ServerTranslate
 import com.idkidknow.realitylink.platform.Platform.Component
 import com.idkidknow.realitylink.platform.Platform.MinecraftServer
 import com.idkidknow.realitylink.platform.api.API
+import com.idkidknow.realitylink.platform.api.PlayerInfo
 import fs2.io.file.Path
 import net.minecraft.entity.player.EntityPlayerMP
 import net.minecraft.server.MinecraftServer as McMinecraftServer
@@ -15,6 +16,7 @@ import net.minecraft.stats.StatisticsFile
 import net.minecraft.util.ChatComponentText
 import net.minecraft.util.IChatComponent
 import net.minecraft.util.StringTranslate
+import net.minecraftforge.common.UsernameCache
 
 import java.io.File
 import java.util.UUID
@@ -123,6 +125,18 @@ object Platform extends API {
               Option(stats.writeStat(stat))
             }
         }
+      }
+
+      override def getOnlinePlayers: List[PlayerInfo] = {
+        server.getConfigurationManager.func_152600_g.map { profile =>
+          PlayerInfo(profile.getName, profile.getId)
+        }.toList
+      }
+
+      override def getCachedPlayers: List[PlayerInfo] = {
+        UsernameCache.getMap.asScala.map { case (uuid, name) =>
+          PlayerInfo(name, uuid)
+        }.toList
       }
     }
   }

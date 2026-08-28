@@ -7,15 +7,18 @@ import com.idkidknow.realitylink.forge1122.mixin.ServerTranslate
 import com.idkidknow.realitylink.platform.Platform.Component
 import com.idkidknow.realitylink.platform.Platform.MinecraftServer
 import com.idkidknow.realitylink.platform.api.API
+import com.idkidknow.realitylink.platform.api.PlayerInfo
 import fs2.io.file.Path
 import net.minecraft.stats.StatList
 import net.minecraft.stats.StatisticsManagerServer
 import net.minecraft.util.text.ITextComponent
 import net.minecraft.util.text.TextComponentString
 import net.minecraft.util.text.translation.LanguageMap
+import net.minecraftforge.common.UsernameCache
 
 import java.io.File
 import java.util.UUID
+import scala.jdk.CollectionConverters.*
 import scala.util.Try
 
 object Platform extends API {
@@ -113,6 +116,18 @@ object Platform extends API {
               Option(stats.readStat(stat))
             }
         }
+      }
+
+      override def getOnlinePlayers: List[PlayerInfo] = {
+        server.getPlayerList.getOnlinePlayerProfiles.map { profile =>
+          PlayerInfo(profile.getName, profile.getId)
+        }.toList
+      }
+
+      override def getCachedPlayers: List[PlayerInfo] = {
+        UsernameCache.getMap.asScala.map { case (uuid, name) =>
+          PlayerInfo(name, uuid)
+        }.toList
       }
     }
   }
