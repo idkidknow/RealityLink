@@ -149,5 +149,5 @@ You can replace `forge1_20_1` with: `forge1_7_10`,
 
 ```sh
 ./mill forge1_20_1.runClient
-./mill forge1_20_1.runServer
+./mill -i forge1_20_1.runServer
 ```
