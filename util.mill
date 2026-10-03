@@ -258,7 +258,7 @@ object ModDev {
             .withTransitive(false)
             .withAttributes(Attributes(Type.empty, Classifier("downgraded-8")))
         val file = Fetch().addDependencies(dep).run().head
-        PathRef(os.Path(file))
+        PathRef(os.Path(file)).withRevalidateOnce
       }
 
       def downgradedJar: T[PathRef] = Task {
