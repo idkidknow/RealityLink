@@ -22,6 +22,11 @@ import org.typelevel.log4cats.Logger
 
 import java.io.IOException
 
+enum ConfigReadingException extends Exception {
+  case IO(e: IOException)
+  case Parsing(e: Exception)
+}
+
 final case class ServerToml(
     host: Option[Host],
     port: Port,
@@ -49,6 +54,31 @@ object ServerToml {
   )
   given Codec[ServerToml] = Codec.derived
 
+  def fromConfigFile[F[_]: {Async, Files}]
+      : F[Either[ConfigReadingException, ServerToml]] = {
+    type FE[A] = EitherT[F, ConfigReadingException, A]
+
+    val serverTomlPath =
+      platform.configDirectory / "realitylink" / "server.toml"
+    val serverTomlString: FE[String] = EitherT(
+      Files[F]
+        .readUtf8(serverTomlPath)
+        .compile
+        .string
+        .attemptNarrow[IOException]
+        .map { ioEither =>
+          ioEither.leftMap(e => ConfigReadingException.IO(e))
+        }
+    )
+
+    serverTomlString.flatMap { str =>
+      EitherT.fromEither[F](
+        decodeToml[ServerToml](str)
+          .leftMap(ConfigReadingException.Parsing(_))
+      )
+    }.value
+  }
+
   def writeDefault[F[_]: {Concurrent, Files}](path: Path): F[Unit] = {
     Stream
       .emit(defaultTomlString)
@@ -73,11 +103,6 @@ final case class ModConfig(
 )
 
 object ModConfig {
-  enum ConfigReadingException extends Exception {
-    case IO(e: IOException)
-    case Parsing(e: Exception)
-  }
-
   private def fromServerToml[F[_]: {Async, Logger, Files}](
       serverToml: ServerToml,
       gameRootDirectory: Path,
@@ -113,36 +138,15 @@ object ModConfig {
   }
 
   def fromConfigFile[F[_]: {Async, Logger, Files}]
-      : F[Either[ConfigReadingException, ModConfig]] = {
-    type FE[A] = EitherT[F, ConfigReadingException, A]
-
-    val serverTomlPath =
-      platform.configDirectory / "realitylink" / "server.toml"
-    val serverTomlString: FE[String] = EitherT(
-      Files[F]
-        .readUtf8(serverTomlPath)
-        .compile
-        .string
-        .attemptNarrow[IOException]
-        .map { ioEither =>
-          ioEither.leftMap(e => ConfigReadingException.IO(e))
-        }
-    )
-
-    serverTomlString.flatMap { str =>
-      decodeToml[ServerToml](str) match {
-        case Right(serverToml) =>
-          EitherT(
-            ModConfig.fromServerToml(
-              serverToml,
-              platform.gameRootDirectory,
-              platform.Language.languageFileExtension,
-              LanguageFileParser[F],
-            )
-          )
-        case Left(e) =>
-          EitherT.leftT(ConfigReadingException.Parsing(e))
-      }
+      : F[Either[ConfigReadingException, ModConfig]] =
+    EitherT(ServerToml.fromConfigFile[F]).flatMap { serverToml =>
+      EitherT(
+        fromServerToml(
+          serverToml,
+          platform.gameRootDirectory,
+          platform.Language.languageFileExtension,
+          LanguageFileParser[F],
+        )
+      )
     }.value
-  }
 }

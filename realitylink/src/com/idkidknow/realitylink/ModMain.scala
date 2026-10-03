@@ -9,6 +9,7 @@ import cats.syntax.all.*
 import com.idkidknow.realitylink.lib.AssetDownload
 import com.idkidknow.realitylink.lib.CallbackBundle
 import com.idkidknow.realitylink.lib.ModConfig
+import com.idkidknow.realitylink.lib.ServerToml
 import com.idkidknow.realitylink.platform.Component
 import com.idkidknow.realitylink.platform.MinecraftServer
 import com.idkidknow.realitylink.server.ChatInterface
@@ -38,26 +39,6 @@ object ModMain {
 
     for {
       serverRef: Ref[F, Option[RunningServer]] <- Ref.of(Option.empty)
-
-      // try auto start
-      config <- ModConfig.fromConfigFile
-      _ <- config match {
-        case Left(e) => logger.warn(e)("failed to load config")
-        case Right(config) =>
-          if (config.autoStart) {
-            logger.info("autoStart = true") *>
-              runRealityLinkServer(
-                server,
-                supervisor,
-                events.broadcastingMessage,
-                config,
-              ).flatMap { runningServer =>
-                serverRef.set(Some(runningServer))
-              }
-          } else {
-            ().pure[F]
-          }
-      }
 
       // register `start` command
       _ <- {
@@ -141,6 +122,26 @@ object ModMain {
               .useForever
           )
           .void
+      }
+
+      // try auto start
+      serverToml <- ServerToml.fromConfigFile
+      _ <- serverToml match {
+        case Left(e) => logger.warn(e)("failed to load config")
+        case Right(toml) if toml.autoStart =>
+          logger.info("autoStart = true") *> ModConfig.fromConfigFile.flatMap {
+            case Left(e) => logger.error(e)("failed to load config")
+            case Right(config) =>
+              runRealityLinkServer(
+                server,
+                supervisor,
+                events.broadcastingMessage,
+                config,
+              ).flatMap { runningServer =>
+                serverRef.set(Some(runningServer))
+              }
+          }
+        case Right(_) => ().pure[F]
       }
     } yield ()
   }
