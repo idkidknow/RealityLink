@@ -19,13 +19,16 @@ import net.minecraft.util.StringTranslate
 import net.minecraftforge.common.UsernameCache
 
 import java.io.File
+import java.util.Optional
 import java.util.UUID
+import java.util.function.Function
 import scala.jdk.CollectionConverters.*
+import scala.jdk.OptionConverters.*
 import scala.util.Try
 
 object Platform extends API {
   opaque type Component = IChatComponent
-  opaque type Language = String => Option[String]
+  opaque type Language = Function[String, Optional[String]]
   opaque type MinecraftServer = McMinecraftServer
 
   object Component extends ComponentOps {
@@ -43,10 +46,8 @@ object Platform extends API {
     ).toOption
 
     extension (c: Component) {
-      override def translateWith(language: Language): String = {
-        import scala.jdk.OptionConverters.*
-        ServerTranslate.translate(c, key => language(key).toJava)
-      }
+      override def translateWith(language: Language): String =
+        ServerTranslate.translate(c, language)
       override def serialize(server: MinecraftServer): String =
         IChatComponent.Serializer.func_150696_a(
           c
@@ -82,7 +83,8 @@ object Platform extends API {
     BroadcastingMessage.setCallback(c => action(c))
 
   object Language extends LanguageOps {
-    override def apply(map: String => Option[String]): Language = map
+    override def apply(map: String => Option[String]): Language =
+      key => map(key).toJava
 
     /** `.lang` format before 1.13 and `.json` format after 1.13 */
     override def parseLanguageFile(

@@ -15,9 +15,8 @@ public class ServerTranslate {
     }
 
     public static @Nonnull String translate(@Nonnull IChatComponent component, @Nonnull Function<String, Optional<String>> language) {
-        IChatComponent copied = component.createCopy();
         injectingLanguage.set(language);
-        String ret = copied.getUnformattedTextForChat();
+        String ret = component.getUnformattedText();
         injectingLanguage.remove();
         return ret;
     }
