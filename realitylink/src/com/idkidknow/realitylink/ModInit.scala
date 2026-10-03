@@ -103,7 +103,7 @@ object ModInit {
     )
     callingStartCommand <- CallbackBundle
       .combineAll[F, Unit, Either[Throwable, Unit]](
-        ().asRight
+        Exception("RealityLink is not ready").asLeft[Unit]
       ) { cb =>
         Async[F].delay {
           platform.setOnCallingStartCommand(() =>

@@ -23,7 +23,8 @@ object CallbackBundle {
 
   /** Create an empty callback bundle and generate a single function which can
    *  invoke all callbacks. The function generated will be passed to `cont` and
-   *  therefore can be used as a single callback.
+   *  therefore can be used as a single callback. `default` is returned only
+   *  when no callbacks are registered.
    */
   def combineAll[F[_]: Concurrent, A, R: Semigroup](default: R)(
       cont: (A => F[R]) => F[Unit]
@@ -31,7 +32,7 @@ object CallbackBundle {
     def unifiedCallback(setRef: Ref[F, Set[A => F[R]]])(a: A): F[R] =
       setRef.get.flatMap { set =>
         set.parUnorderedTraverse { cb => cb(a) }.map { rSet =>
-          rSet.foldLeft(default)(Semigroup[R].combine)
+          rSet.reduceOption(Semigroup[R].combine).getOrElse(default)
         }
       }
 
