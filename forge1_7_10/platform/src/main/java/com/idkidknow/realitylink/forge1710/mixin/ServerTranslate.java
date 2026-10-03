@@ -16,8 +16,10 @@ public class ServerTranslate {
 
     public static @Nonnull String translate(@Nonnull IChatComponent component, @Nonnull Function<String, Optional<String>> language) {
         injectingLanguage.set(language);
-        String ret = component.getUnformattedText();
-        injectingLanguage.remove();
-        return ret;
+        try {
+            return component.getUnformattedText();
+        } finally {
+            injectingLanguage.remove();
+        }
     }
 }

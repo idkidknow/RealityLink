@@ -16,8 +16,10 @@ public class ServerTranslate {
 
     public static @Nonnull String translate(@Nonnull ITextComponent text, @Nonnull Function<String, Optional<String>> language) {
         injectingLanguage.set(language);
-        String ret = text.getUnformattedText();
-        injectingLanguage.remove();
-        return ret;
+        try {
+            return text.getUnformattedText();
+        } finally {
+            injectingLanguage.remove();
+        }
     }
 }
