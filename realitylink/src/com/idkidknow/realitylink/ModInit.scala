@@ -4,6 +4,7 @@ import cats.effect.Concurrent
 import cats.effect.IO
 import cats.effect.implicits.*
 import cats.effect.kernel.Async
+import cats.effect.kernel.Resource
 import cats.effect.std.Dispatcher
 import cats.syntax.all.*
 import com.idkidknow.realitylink.lib.CallbackBundle
@@ -45,7 +46,13 @@ object ModInit {
           events.serverStarting,
           events.serverStopping,
         ) { server =>
-          ModMain.realityLinkMain(server, events)
+          ModMain.realityLinkMain(server, events).handleErrorWith[Unit] { e =>
+            Resource.eval(
+              logger.error(e)(
+                "Failed to initialize RealityLink for this Minecraft server"
+              )
+            )
+          }
         }
         .useForever
         .start

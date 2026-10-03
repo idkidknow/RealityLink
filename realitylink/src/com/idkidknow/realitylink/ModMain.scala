@@ -1,10 +1,8 @@
 package com.idkidknow.realitylink
 
 import cats.effect.kernel.Async
-import cats.effect.kernel.Fiber
-import cats.effect.kernel.MonadCancel
-import cats.effect.kernel.Ref
 import cats.effect.kernel.Resource
+import cats.effect.std.NonEmptyHotswap
 import cats.effect.std.Supervisor
 import cats.syntax.all.*
 import com.idkidknow.realitylink.lib.AssetDownload
@@ -32,16 +30,14 @@ object ModMain {
   ](server: MinecraftServer, events: ModInit.Events[F]): Resource[F, Unit] = {
     given logger: Logger[F] = LoggerFactory[F].getLogger
 
-    type RunningServer = Fiber[F, Throwable, Nothing]
-
     for {
-      supervisor <- Supervisor[F]
-      serverRef <- Resource.eval(Ref.of[F, Option[RunningServer]](None))
+      downloadSupervisor <- Supervisor[F]
+      currentServer <- NonEmptyHotswap.empty[F, Unit]
 
       // register `start` command
       _ <- {
         val callback: Unit => F[Either[Throwable, Unit]] = { _ =>
-          serverRef.get.flatMap {
+          currentServer.get.use(_.pure[F]).flatMap {
             case Some(_) =>
               RuntimeException("Server already started").asLeft[Unit].pure[F]
             case None =>
@@ -50,14 +46,15 @@ object ModMain {
                 case Left(e) =>
                   logger.error(e)("failed to load config") *> e.asLeft.pure[F]
                 case Right(config) =>
-                  runRealityLinkServer(
-                    server,
-                    supervisor,
-                    events.broadcastingMessage,
-                    config,
-                  ).flatMap { runningServer =>
-                    serverRef.set(Some(runningServer)) *> ().asRight.pure[F]
-                  }
+                  currentServer
+                    .swap(
+                      runRealityLinkServer(
+                        server,
+                        events.broadcastingMessage,
+                        config,
+                      ).map(_.some)
+                    )
+                    .attempt
               }
           }
         }
@@ -66,13 +63,7 @@ object ModMain {
 
       // register `stop` command
       _ <- {
-        val callback: Unit => F[Unit] = { _ =>
-          serverRef.get.flatMap {
-            case None => ().pure[F]
-            case Some(runningServer) =>
-              runningServer.cancel *> serverRef.set(None)
-          }
-        }
+        val callback: Unit => F[Unit] = { _ => currentServer.clear }
         events.callingStopCommand.registerAsResource(callback)
       }
 
@@ -103,7 +94,7 @@ object ModMain {
             logger.error("Downloading timed out"),
           )
           logger.info("Start downloading language assets") *>
-            supervisor.supervise(withTimeout).void
+            downloadSupervisor.supervise(withTimeout).void
         }
         events.callingDownloadCommand.registerAsResource(callback)
       }
@@ -118,14 +109,19 @@ object ModMain {
               .flatMap {
                 case Left(e) => logger.error(e)("failed to load config")
                 case Right(config) =>
-                  runRealityLinkServer(
-                    server,
-                    supervisor,
-                    events.broadcastingMessage,
-                    config,
-                  ).flatMap { runningServer =>
-                    serverRef.set(Some(runningServer))
-                  }
+                  currentServer
+                    .swap(
+                      runRealityLinkServer(
+                        server,
+                        events.broadcastingMessage,
+                        config,
+                      ).map(_.some)
+                    )
+                    .handleErrorWith { e =>
+                      logger.error(e)(
+                        "Failed to auto start RealityLink server"
+                      )
+                    }
               }
           case Right(_) => ().pure[F]
         }
@@ -135,28 +131,30 @@ object ModMain {
 
   private def runRealityLinkServer[F[_]: {Async, LoggerFactory, Network}](
       server: MinecraftServer,
-      supervisor: Supervisor[F],
       broadcastingMessage: CallbackBundle[F, Component, Unit],
       config: ModConfig,
-  ): F[Fiber[F, Throwable, Nothing]] = {
+  ): Resource[F, Unit] = {
     val logger = LoggerFactory[F].getLogger
-    val interface: ChatInterface[F] =
+    val interface =
       ChatInterface[F](server, broadcastingMessage, config.language)
-    val runRealityLinkServerF: F[Nothing] = {
-      val serverR =
-        RealityLinkServer.run[F](config.serverConfig, interface, server)
-
+    Resource.eval(
       logger.info(
         show"Starting RealityLink server on ${config.serverConfig.host}:${config.serverConfig.port}"
-      ) *> serverR.useForever
-    }
-
-    supervisor.supervise {
-      MonadCancel[F].onCancel(
-        runRealityLinkServerF,
-        logger.info("RealityLink server stopped"),
       )
-    }
+    ) *> RealityLinkServer
+      .run[F](config.serverConfig, interface, server)
+      .evalTap { _ =>
+        logger.info(
+          show"RealityLink server started on ${config.serverConfig.host}:${config.serverConfig.port}"
+        )
+      }
+      .onFinalize(logger.info("RealityLink server stopped"))
+      .onError { case e =>
+        Resource.eval(logger.error(e)("Failed to start RealityLink server"))
+      }
+      .onCancel(
+        Resource.eval(logger.info("RealityLink server startup canceled"))
+      )
   }
 
 }
