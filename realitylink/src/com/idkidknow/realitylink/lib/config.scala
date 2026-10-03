@@ -63,7 +63,7 @@ object ServerToml {
     """host = "0.0.0.0"
       |port = 39244
       |localeCode = "en_us"
-      |resourcePackDirs = ["mod", "serverlang"]
+      |resourcePackDirs = ["mods", "serverlang"]
       |autoStart = false
       |""".stripMargin
 }
