@@ -2,7 +2,6 @@ package com.idkidknow.realitylink.platform
 
 import com.idkidknow.realitylink.forge1122.ModEntry
 import com.idkidknow.realitylink.forge1122.mixin.BroadcastingMessage
-import com.idkidknow.realitylink.forge1122.mixin.LanguageMapMutator
 import com.idkidknow.realitylink.forge1122.mixin.ServerTranslate
 import com.idkidknow.realitylink.platform.Platform.Component
 import com.idkidknow.realitylink.platform.Platform.MinecraftServer
@@ -17,13 +16,16 @@ import net.minecraft.util.text.translation.LanguageMap
 import net.minecraftforge.common.UsernameCache
 
 import java.io.File
+import java.util.Optional
 import java.util.UUID
+import java.util.function.Function
 import scala.jdk.CollectionConverters.*
+import scala.jdk.OptionConverters.*
 import scala.util.Try
 
 object Platform extends API {
   opaque type Component = ITextComponent
-  opaque type Language = LanguageMap
+  opaque type Language = Function[String, Optional[String]]
   opaque type MinecraftServer = net.minecraft.server.MinecraftServer
 
   object Component extends ComponentOps {
@@ -75,12 +77,7 @@ object Platform extends API {
 
   object Language extends LanguageOps {
     override def apply(map: String => Option[String]): Language =
-      LanguageMapMutator.make { key =>
-        map(key) match {
-          case Some(value) => value
-          case None => LanguageMapMutator.getDefault.translateKey(key)
-        }
-      }
+      key => map(key).toJava
 
     /** `.lang` format before 1.13 and `.json` format after 1.13 */
     override def parseLanguageFile(

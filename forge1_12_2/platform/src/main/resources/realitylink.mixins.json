@@ -4,8 +4,7 @@
   "package": "com.idkidknow.realitylink.forge1122.mixin.mixin",
   "compatibilityLevel": "JAVA_8",
   "mixins": [
-    "I18nMixin",
-    "LanguageMapMixin",
+    "TextComponentTranslationMixin",
     "PlayerListMixin"
   ],
   "client": [],
