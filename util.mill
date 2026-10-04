@@ -254,7 +254,7 @@ object ModDev {
       def jvmDowngraderClasspath: T[Seq[PathRef]] = Task {
         defaultResolver().classpath(
           Seq(
-            mvn"xyz.wagyourtail.jvmdowngrader:jvmdowngrader:1.3.6;classifier=all"
+            mvn"xyz.wagyourtail.jvmdowngrader:jvmdowngrader:2.0.1;classifier=all"
           )
         )
       }
@@ -262,7 +262,7 @@ object ModDev {
       def jvmDowngraderJavaApi: T[PathRef] = Task {
         import coursier.{Attributes, Type, Classifier, Fetch}
         val dep =
-          mvn"xyz.wagyourtail.jvmdowngrader:jvmdowngrader-java-api:1.3.6".dep
+          mvn"xyz.wagyourtail.jvmdowngrader:jvmdowngrader-java-api:2.0.1".dep
             .withTransitive(false)
             .withAttributes(Attributes(Type.empty, Classifier("downgraded-8")))
         val file = Fetch().addDependencies(dep).run().head

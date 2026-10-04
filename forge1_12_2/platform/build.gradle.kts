@@ -3,7 +3,7 @@ import com.gtnewhorizons.retrofuturagradle.minecraft.RunMinecraftTask
 
 plugins {
     `java-library`
-    id("com.gtnewhorizons.retrofuturagradle") version "2.0.2"
+    id("com.gtnewhorizons.retrofuturagradle") version "2.0.6"
     idea
 }
 
@@ -32,12 +32,12 @@ repositories {
 }
 
 dependencies {
-    modUtils.enableMixins("zone.rong:mixinbooter:11.5", "realitylink.refmap.json")
-    implementation("zone.rong:mixinbooter:11.5") {
+    modUtils.enableMixins("zone.rong:mixinbooter:11.17", "realitylink.refmap.json")
+    implementation("zone.rong:mixinbooter:11.17") {
         isTransitive = false
     }
-    annotationProcessor("zone.rong:mixinbooter:11.5")
-    implementation("xyz.wagyourtail.jvmdowngrader:jvmdowngrader:1.3.6:all") // dev only
+    annotationProcessor("zone.rong:mixinbooter:11.17")
+    implementation("xyz.wagyourtail.jvmdowngrader:jvmdowngrader:2.0.1:all") // dev only
 }
 
 val coreRunClasspathTxt = System.getenv("REALITYLINK_CORE_RUN_CLASSPATH") ?: ""

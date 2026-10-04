@@ -3,7 +3,7 @@ import net.fabricmc.loom.task.RemapJarTask
 
 plugins {
     `java-library`
-    id("dev.architectury.loom") version "1.17.491"
+    id("dev.architectury.loom") version "1.17.493"
     idea
 }
 
@@ -36,7 +36,7 @@ dependencies {
         parchment("org.parchmentmc.data:parchment-1.16.5:2022.03.06@zip")
     })
     forge("net.minecraftforge:forge:1.16.5-36.2.34")
-    implementation("xyz.wagyourtail.jvmdowngrader:jvmdowngrader:1.3.6:all") // dev only
+    implementation("xyz.wagyourtail.jvmdowngrader:jvmdowngrader:2.0.1:all") // dev only
 }
 
 loom.runs {

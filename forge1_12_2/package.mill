@@ -19,7 +19,7 @@ object `package` extends ModDev.WithDowngrade {
   object core extends Downgrade {
     def mvnDeps = Task {
       super.mvnDeps() ++ Seq(
-        mvn"org.apache.logging.log4j:log4j-slf4j2-impl:2.24.3"
+        mvn"org.apache.logging.log4j:log4j-slf4j2-impl:2.26.1"
       )
     }
     def enableBsp = build.bspEnabled("forge1_12_2")

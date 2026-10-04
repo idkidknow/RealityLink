@@ -3,7 +3,7 @@ import kotlin.io.path.deleteRecursively
 
 plugins {
     `java-library`
-    id("net.neoforged.moddev") version "2.0.141"
+    id("net.neoforged.moddev") version "2.0.148"
     idea
 }
 
@@ -19,7 +19,7 @@ java {
 }
 
 neoForge {
-    version = "21.1.235"
+    version = "21.1.255"
     validateAccessTransformers = true
 
     parchment {

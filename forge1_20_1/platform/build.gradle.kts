@@ -3,7 +3,7 @@ import net.neoforged.nfrtgradle.CreateMinecraftArtifacts
 
 plugins {
     `java-library`
-    id("net.neoforged.moddev.legacyforge") version "2.0.141"
+    id("net.neoforged.moddev.legacyforge") version "2.0.148"
     idea
 }
 
@@ -19,7 +19,7 @@ java {
 }
 
 legacyForge {
-    version = "1.20.1-47.4.10"
+    version = "1.20.1-47.4.26"
     validateAccessTransformers = true
 
     parchment {
