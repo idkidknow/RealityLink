@@ -8,7 +8,7 @@ plugins {
 }
 
 group = "com.idkidknow.realitylink"
-version = "1.0.0"
+version = rootProject.file("../../version").readText().trim()
 
 java {
     toolchain {
