@@ -3,6 +3,7 @@ package build
 import mill.*, scalalib.*
 import mill.api.BuildCtx
 import java.nio.file.attribute.FileTime
+import java.util.concurrent.ConcurrentHashMap
 import java.util.jar.JarEntry
 import java.util.jar.JarFile
 import java.util.jar.JarInputStream
@@ -122,14 +123,19 @@ trait ModDev extends Module {
 }
 
 object ModDev {
+  private val gradleLocks = new ConcurrentHashMap[os.Path, Object]()
+
   final case class CallGradle(proc: os.proc, cwd: os.Path) {
-    def callWithEnv(env: Map[String, String]): Unit = proc.call(
-      cwd = cwd,
-      stdin = os.Inherit,
-      stdout = os.Inherit,
-      stderr = os.Inherit,
-      env = env,
-    )
+    def callWithEnv(env: Map[String, String]): Unit =
+      gradleLocks.computeIfAbsent(cwd, _ => new Object()).synchronized {
+        proc.call(
+          cwd = cwd,
+          stdin = os.Inherit,
+          stdout = os.Inherit,
+          stderr = os.Inherit,
+          env = env,
+        )
+      }
     def call(): Unit = callWithEnv(Map.empty)
   }
 
