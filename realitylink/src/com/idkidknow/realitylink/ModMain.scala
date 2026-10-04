@@ -4,6 +4,7 @@ import cats.effect.kernel.Async
 import cats.effect.kernel.Fiber
 import cats.effect.kernel.MonadCancel
 import cats.effect.kernel.Ref
+import cats.effect.kernel.Resource
 import cats.effect.std.Supervisor
 import cats.syntax.all.*
 import com.idkidknow.realitylink.lib.AssetDownload
@@ -26,19 +27,16 @@ import org.typelevel.log4cats.LoggerFactory
 import scala.concurrent.duration.*
 
 object ModMain {
-  private[realitylink] def onServerStarting[
+  private[realitylink] def realityLinkMain[
       F[_]: {Async, LoggerFactory, Files, Network}
-  ](
-      server: MinecraftServer,
-      supervisor: Supervisor[F],
-      events: ModInit.Events[F],
-  ): F[Unit] = {
+  ](server: MinecraftServer, events: ModInit.Events[F]): Resource[F, Unit] = {
     given logger: Logger[F] = LoggerFactory[F].getLogger
 
     type RunningServer = Fiber[F, Throwable, Nothing]
 
     for {
-      serverRef: Ref[F, Option[RunningServer]] <- Ref.of(Option.empty)
+      supervisor <- Supervisor[F]
+      serverRef <- Resource.eval(Ref.of[F, Option[RunningServer]](None))
 
       // register `start` command
       _ <- {
@@ -63,11 +61,7 @@ object ModMain {
               }
           }
         }
-        supervisor
-          .supervise( // unregister when Minecraft server stopping
-            events.callingStartCommand.registerAsResource(callback).useForever
-          )
-          .void
+        events.callingStartCommand.registerAsResource(callback)
       }
 
       // register `stop` command
@@ -79,11 +73,7 @@ object ModMain {
               runningServer.cancel *> serverRef.set(None)
           }
         }
-        supervisor
-          .supervise(
-            events.callingStopCommand.registerAsResource(callback).useForever
-          )
-          .void
+        events.callingStopCommand.registerAsResource(callback)
       }
 
       // register `download` command
@@ -115,33 +105,30 @@ object ModMain {
           logger.info("Start downloading language assets") *>
             supervisor.supervise(withTimeout).void
         }
-        supervisor
-          .supervise(
-            events.callingDownloadCommand
-              .registerAsResource(callback)
-              .useForever
-          )
-          .void
+        events.callingDownloadCommand.registerAsResource(callback)
       }
 
       // try auto start
-      serverToml <- ServerToml.fromConfigFile
-      _ <- serverToml match {
-        case Left(e) => logger.warn(e)("failed to load config")
-        case Right(toml) if toml.autoStart =>
-          logger.info("autoStart = true") *> ModConfig.fromConfigFile.flatMap {
-            case Left(e) => logger.error(e)("failed to load config")
-            case Right(config) =>
-              runRealityLinkServer(
-                server,
-                supervisor,
-                events.broadcastingMessage,
-                config,
-              ).flatMap { runningServer =>
-                serverRef.set(Some(runningServer))
+      serverToml <- Resource.eval(ServerToml.fromConfigFile[F])
+      _ <- Resource.eval {
+        serverToml match {
+          case Left(e) => logger.warn(e)("failed to load config")
+          case Right(toml) if toml.autoStart =>
+            logger.info("autoStart = true") *> ModConfig.fromConfigFile
+              .flatMap {
+                case Left(e) => logger.error(e)("failed to load config")
+                case Right(config) =>
+                  runRealityLinkServer(
+                    server,
+                    supervisor,
+                    events.broadcastingMessage,
+                    config,
+                  ).flatMap { runningServer =>
+                    serverRef.set(Some(runningServer))
+                  }
               }
-          }
-        case Right(_) => ().pure[F]
+          case Right(_) => ().pure[F]
+        }
       }
     } yield ()
   }

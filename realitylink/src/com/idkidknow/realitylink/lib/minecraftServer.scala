@@ -1,31 +1,26 @@
 package com.idkidknow.realitylink.lib
 
 import cats.effect.Concurrent
-import cats.effect.std.Queue
-import cats.effect.std.Supervisor
-import cats.syntax.all.*
+import cats.effect.kernel.Resource
+import cats.effect.std.NonEmptyHotswap
 import com.idkidknow.realitylink.platform.MinecraftServer
-import fs2.Stream
 
 /** The Minecraft server may start and stop multiple times because the existence
  *  of single-player mode.
  *
- *  Await `MinecraftServer` starting when performing the `Stream`'s `F`. When
- *  the server stops, all supervised fibers will be finalized.
+ *  Acquire `main` when `MinecraftServer` starts. When the server stops, the
+ *  acquired resource will be finalized.
  */
-def streamMinecraftServer[F[_]: Concurrent](
+def manageMinecraftServer[F[_]: Concurrent](
     serverStarting: CallbackBundle[F, MinecraftServer, Unit],
-    serverStopping: CallbackBundle[F, ?, Unit],
-): Stream[F, (MinecraftServer, Supervisor[F])] = {
-  def makeSupervisor(ms: MinecraftServer): F[(MinecraftServer, Supervisor[F])] =
-    Supervisor[F].allocated.flatMap { case (supervisor, finalizer) =>
-      val registerFinalizer = serverStopping.registerRunOnce { _ =>
-        finalizer
-      }
-      registerFinalizer *> (ms, supervisor).pure[F]
+    serverStopping: CallbackBundle[F, Unit, Unit],
+)(main: MinecraftServer => Resource[F, Unit]): Resource[F, Unit] =
+  for {
+    current <- NonEmptyHotswap[F, Unit](Resource.unit[F])
+    _ <- serverStopping.registerAsResource { _ =>
+      current.swap(Resource.unit[F])
     }
-
-  val s: Stream[F, MinecraftServer] =
-    serverStarting.registerAsStream(Queue.synchronous)
-  s.evalMap(makeSupervisor)
-}
+    _ <- serverStarting.registerAsResource { server =>
+      current.swap(main(server))
+    }
+  } yield ()

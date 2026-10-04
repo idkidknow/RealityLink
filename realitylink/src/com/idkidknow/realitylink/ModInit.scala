@@ -5,14 +5,12 @@ import cats.effect.IO
 import cats.effect.implicits.*
 import cats.effect.kernel.Async
 import cats.effect.std.Dispatcher
-import cats.effect.std.Supervisor
 import cats.syntax.all.*
 import com.idkidknow.realitylink.lib.CallbackBundle
 import com.idkidknow.realitylink.lib.Leak
 import com.idkidknow.realitylink.lib.ServerToml
 import com.idkidknow.realitylink.platform.Component
 import com.idkidknow.realitylink.platform.MinecraftServer
-import fs2.Stream
 import fs2.io.file.Files
 import fs2.io.file.Path
 import fs2.io.net.Network
@@ -42,23 +40,15 @@ object ModInit {
 
       events <- ModInit.initEvents
 
-      stream: Stream[F, (MinecraftServer, Supervisor[F])] = lib
-        .streamMinecraftServer(
+      _ <- lib
+        .manageMinecraftServer(
           events.serverStarting,
           events.serverStopping,
-        )
-      // call the main logic every server starting
-      _ <- stream
-        .evalMap { case (server, supervisor) =>
-          ModMain.onServerStarting(
-            server,
-            supervisor,
-            events,
-          )
+        ) { server =>
+          ModMain.realityLinkMain(server, events)
         }
-        .compile
-        .drain
-        .start // start a fiber so we won't block the thread
+        .useForever
+        .start
     } yield ()
   }
 
