@@ -11,7 +11,6 @@ import com.idkidknow.realitylink.lib.LanguageMap.LanguageFileParser
 import com.idkidknow.realitylink.lib.decodeToml
 import com.idkidknow.realitylink.platform
 import com.idkidknow.realitylink.server.RealityLinkServerConfig
-import de.lhns.fs2.compress.Unarchiver
 import fs2.Stream
 import fs2.io.file.Files
 import fs2.io.file.Path
@@ -22,7 +21,6 @@ import io.circe.Encoder
 import org.typelevel.log4cats.Logger
 
 import java.io.IOException
-import java.util.zip.ZipEntry
 
 final case class ServerToml(
     host: Option[Host],
@@ -80,13 +78,11 @@ object ModConfig {
     case Parsing(e: Exception)
   }
 
-  private def fromServerToml[F[_]: {Concurrent, Logger, Files}](
+  private def fromServerToml[F[_]: {Async, Logger, Files}](
       serverToml: ServerToml,
       gameRootDirectory: Path,
       languageFileExtension: String,
       languageFileParser: LanguageFileParser[F],
-  )(using
-      Unarchiver[F, Option, ZipEntry]
   ): F[Either[ConfigReadingException, ModConfig]] = {
     type FE[A] = EitherT[F, ConfigReadingException, A]
     val resourcePackDirs =
@@ -116,9 +112,8 @@ object ModConfig {
     }.value
   }
 
-  def fromConfigFile[F[_]: {Async, Logger, Files}](using
-      unarchiver: Unarchiver[F, Option, ZipEntry]
-  ): F[Either[ConfigReadingException, ModConfig]] = {
+  def fromConfigFile[F[_]: {Async, Logger, Files}]
+      : F[Either[ConfigReadingException, ModConfig]] = {
     type FE[A] = EitherT[F, ConfigReadingException, A]
 
     val serverTomlPath =

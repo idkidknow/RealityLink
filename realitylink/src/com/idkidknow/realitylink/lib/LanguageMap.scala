@@ -1,12 +1,11 @@
 package com.idkidknow.realitylink.lib
 
-import cats.Apply
-import cats.effect.Concurrent
+import cats.effect.Resource
+import cats.effect.Sync
 import cats.effect.kernel.Async
 import cats.kernel.Monoid
 import cats.syntax.all.*
 import com.idkidknow.realitylink.platform.Language
-import de.lhns.fs2.compress.Unarchiver
 import fs2.Stream
 import fs2.io.file.Files
 import fs2.io.file.Path
@@ -16,6 +15,7 @@ import org.typelevel.log4cats.Logger
 import java.io.IOException
 import java.io.InputStream
 import java.util.zip.ZipEntry
+import java.util.zip.ZipFile
 
 opaque type LanguageMap = Map[String, String]
 
@@ -39,7 +39,7 @@ object LanguageMap {
     def apply[F[_]: Async]: LanguageFileParser[F] = { stream =>
       val jStream: Stream[F, InputStream] = stream.through(fs2.io.toInputStream)
       jStream
-        .map(Language.parseLanguageFile)
+        .evalMap(input => Async[F].blocking(Language.parseLanguageFile(input)))
         .compile
         .onlyOrError
     }
@@ -55,33 +55,52 @@ object LanguageMap {
    *  @param filename
    *    locale code with an extension name, e.g. `en_us.json`, `en_US.lang`
    */
-  private def fromArchive[F[_]: {Apply, Concurrent, Logger}](
-      stream: Stream[F, Byte],
+  private def fromArchiveFile[F[_]: {Async, Logger}](
+      archivePath: Path,
       parser: LanguageFileParser[F],
       filename: String,
-  )(using
-      unarchiver: Unarchiver[F, Option, ZipEntry]
   ): F[Option[LanguageMap]] = {
-    stream
-      .through(unarchiver.unarchive)
-      .flatMap { case (entry, data) =>
-        val name = entry.name
-        val regex = show"^assets/[^/]+/lang/$filename$$".r
-        if (regex.matches(name)) {
-          val parsed: F[Option[LanguageMap]] = parser(data)
-          val languageMap: F[Stream[F, LanguageMap]] = parsed.map {
-            case Some(map) => Stream.emit(map)
-            case None =>
-              Stream.exec(Logger[F].warn(show"failed to parse entry $name"))
+    import scala.jdk.CollectionConverters.*
+    Resource
+      .fromAutoCloseable(
+        Sync[F].blocking(ZipFile(archivePath.toNioPath.toFile))
+      )
+      .use { zipFile =>
+        val entries: F[LazyList[ZipEntry]] =
+          Sync[F].blocking(zipFile.entries()).map { entries =>
+            entries.asScala
+              .filter { entry =>
+                val parts = entry.getName.split('/')
+                !entry.isDirectory
+                && parts.length === 4
+                && parts(0) === "assets"
+                && parts(2) === "lang"
+                && parts(3) === filename
+              }
+              .to(LazyList)
           }
-          Stream.eval(languageMap).flatten
-        } else {
-          data.drain
-        }
+        Stream
+          .evalSeq(entries)
+          .flatMap { entry =>
+            val data = fs2.io.readInputStream(
+              fis = Sync[F].blocking(zipFile.getInputStream(entry)),
+              chunkSize = 8192,
+              closeAfterUse = true,
+            )
+            val parsed: F[Option[LanguageMap]] = parser(data)
+            val languageMap: F[Stream[F, LanguageMap]] = parsed.map {
+              case Some(map) => Stream.emit(map)
+              case None =>
+                Stream.exec(
+                  Logger[F].warn(show"failed to parse entry ${entry.getName}")
+                )
+            }
+            Stream.eval(languageMap).flatten
+          }
+          .compile
+          .foldMonoid(using monoid)
+          .map(Some(_))
       }
-      .compile
-      .foldMonoid(using monoid)
-      .map(Some(_))
       .recoverWith { case e: IOException =>
         Logger[F].warn(e)("Error reading archive") *> None.pure[F]
       }
@@ -92,17 +111,14 @@ object LanguageMap {
    *
    *  Returns empty map if IOException is thrown
    */
-  def fromArchiveDirectory[F[_]: {Apply, Concurrent, Logger, Files}](
+  def fromArchiveDirectory[F[_]: {Async, Logger, Files}](
       directoryPath: Path,
       parser: LanguageFileParser[F],
       filename: String,
       maxDepth: Int,
-  )(using
-      unarchiver: Unarchiver[F, Option, ZipEntry]
   ): F[LanguageMap] = {
     def readZipFile(path: Path): F[LanguageMap] = {
-      val stream = Files[F].readAll(path)
-      fromArchive(stream, parser, filename).flatMap {
+      fromArchiveFile(path, parser, filename).flatMap {
         case Some(map) => map.pure[F]
         case None =>
           Logger[F]

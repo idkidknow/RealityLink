@@ -14,9 +14,7 @@ import com.idkidknow.realitylink.platform.MinecraftServer
 import com.idkidknow.realitylink.server.ChatInterface
 import com.idkidknow.realitylink.server.RealityLinkServer
 import de.lhns.fs2.compress.Archiver
-import de.lhns.fs2.compress.Unarchiver
 import de.lhns.fs2.compress.ZipArchiver
-import de.lhns.fs2.compress.ZipUnarchiver
 import fs2.io.file.Files
 import fs2.io.file.Path
 import fs2.io.net.Network
@@ -24,7 +22,6 @@ import org.http4s.ember.client.EmberClientBuilder
 import org.typelevel.log4cats.Logger
 import org.typelevel.log4cats.LoggerFactory
 
-import java.util.zip.ZipEntry
 import scala.concurrent.duration.*
 
 object ModMain {
@@ -36,7 +33,6 @@ object ModMain {
       events: ModInit.Events[F],
   ): F[Unit] = {
     given logger: Logger[F] = LoggerFactory[F].getLogger
-    given Unarchiver[F, Option, ZipEntry] = ZipUnarchiver.make[F]()
 
     type RunningServer = Fiber[F, Throwable, Nothing]
 
